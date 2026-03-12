@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagnóstico de Liderazgo Generacional</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root {
+    --navy: #0D1B2A;
+    --navy-mid: #1B2D40;
+    --navy-light: #243447;
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --cream: #F5F0E8;
+    --white: #FFFFFF;
+    --gray: #8A9BB0;
+    --text: #E8EDF2;
+    --success: #4CAF8C;
+    --radius: 16px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--navy);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at 30% 20%, rgba(201,168,76,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 80%, rgba(13,27,42,0.8) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 780px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ---- SCREEN BASE ---- */
+  .screen { display: none; animation: fadeIn 0.5s ease; }
+  .screen.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ---- INTRO ---- */
+  .intro-card {
+    background: var(--navy-mid);
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 24px;
+    padding: 60px 50px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .intro-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+
+  .badge {
+    display: inline-block;
+    background: rgba(201,168,76,0.15);
+    border: 1px solid rgba(201,168,76,0.4);
+    color: var(--gold-light);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 6px 18px;
+    border-radius: 20px;
+    margin-bottom: 30px;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 5vw, 44px);
+    font-weight: 900;
+    line-height: 1.15;
+    color: var(--white);
+    margin-bottom: 20px;
+  }
+
+  h1 span { color: var(--gold); }
+
+  .intro-desc {
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--gray);
+    max-width: 520px;
+    margin: 0 auto 40px;
+  }
+
+  .meta-row {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+  }
+
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--gray);
+  }
+
+  .meta-item .icon {
+    width: 32px; height: 32px;
+    background: rgba(201,168,76,0.12);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+  }
+
+  .btn-start {
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: var(--navy);
+    border: none;
+    padding: 16px 48px;
+    border-radius: 50px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    letter-spacing: 0.5px;
+  }
+
+  .btn-start:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(201,168,76,0.4);
+  }
+
+  /* ---- PROGRESS ---- */
+  .progress-wrap {
+    margin-bottom: 24px;
+  }
+
+  .progress-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .progress-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--gray);
+  }
+
+  .progress-counter {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--gold);
+  }
+
+  .progress-bar-bg {
+    height: 4px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    border-radius: 4px;
+    transition: width 0.5s ease;
+  }
+
+  /* ---- QUESTION CARD ---- */
+  .question-card {
+    background: var(--navy-mid);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: var(--radius);
+    padding: 40px;
+    margin-bottom: 20px;
+    position: relative;
+  }
+
+  .section-tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    background: rgba(201,168,76,0.12);
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+  }
+
+  .question-text {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(17px, 2.5vw, 21px);
+    font-weight: 700;
+    line-height: 1.4;
+    color: var(--white);
+    margin-bottom: 28px;
+  }
+
+  /* ---- OPTIONS ---- */
+  .options-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .option-btn {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    background: rgba(255,255,255,0.03);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 14px 18px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-align: left;
+    width: 100%;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .option-btn:hover {
+    background: rgba(201,168,76,0.08);
+    border-color: rgba(201,168,76,0.4);
+    transform: translateX(4px);
+  }
+
+  .option-btn.selected {
+    background: rgba(201,168,76,0.15);
+    border-color: var(--gold);
+    color: var(--white);
+  }
+
+  .option-letter {
+    min-width: 26px;
+    height: 26px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--gray);
+    transition: all 0.25s;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .option-btn.selected .option-letter {
+    background: var(--gold);
+    color: var(--navy);
+  }
+
+  /* ---- NAV BUTTONS ---- */
+  .nav-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .btn-nav {
+    padding: 12px 28px;
+    border-radius: 50px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s;
+    border: none;
+  }
+
+  .btn-prev {
+    background: transparent;
+    border: 1.5px solid rgba(255,255,255,0.15);
+    color: var(--gray);
+  }
+
+  .btn-prev:hover { border-color: var(--gray); color: var(--white); }
+
+  .btn-next {
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: var(--navy);
+    font-weight: 700;
+    margin-left: auto;
+  }
+
+  .btn-next:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(201,168,76,0.35); }
+  .btn-next:disabled { opacity: 0.35; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  /* ---- RESULTS ---- */
+  .result-card {
+    background: var(--navy-mid);
+    border: 1px solid rgba(201,168,76,0.25);
+    border-radius: 24px;
+    overflow: hidden;
+  }
+
+  .result-header {
+    background: linear-gradient(135deg, var(--navy-light), var(--navy-mid));
+    padding: 50px 50px 40px;
+    text-align: center;
+    border-bottom: 1px solid rgba(201,168,76,0.15);
+    position: relative;
+  }
+
+  .result-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 60px; height: 3px;
+    background: var(--gold);
+    border-radius: 3px;
+  }
+
+  .score-ring {
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    border: 3px solid var(--gold);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+    background: rgba(201,168,76,0.08);
+    position: relative;
+  }
+
+  .score-ring::before {
+    content: '';
+    position: absolute;
+    inset: -8px;
+    border-radius: 50%;
+    border: 1px solid rgba(201,168,76,0.2);
+  }
+
+  .score-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    font-weight: 900;
+    color: var(--gold);
+    line-height: 1;
+  }
+
+  .score-label {
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--gray);
+    margin-top: 2px;
+  }
+
+  .result-profile-num {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 10px;
+  }
+
+  .result-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(22px, 4vw, 32px);
+    font-weight: 900;
+    color: var(--white);
+    margin-bottom: 12px;
+  }
+
+  .result-range {
+    font-size: 12px;
+    color: var(--gray);
+  }
+
+  .result-body {
+    padding: 40px 50px;
+  }
+
+  .result-desc {
+    font-size: 15px;
+    line-height: 1.75;
+    color: #BDC9D9;
+    margin-bottom: 30px;
+    text-align: center;
+  }
+
+  /* Profile descriptions */
+  .profile-traits {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 36px;
+  }
+
+  .trait-item {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  .trait-icon { font-size: 20px; margin-bottom: 6px; }
+  .trait-title { font-size: 12px; font-weight: 700; color: var(--gold-light); margin-bottom: 4px; }
+  .trait-text { font-size: 12px; color: var(--gray); line-height: 1.5; }
+
+  /* Score bar */
+  .score-spectrum {
+    background: rgba(255,255,255,0.04);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 30px;
+  }
+
+  .spectrum-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--gray);
+    margin-bottom: 14px;
+  }
+
+  .spectrum-bar-bg {
+    height: 10px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 10px;
+    position: relative;
+    margin-bottom: 10px;
+  }
+
+  .spectrum-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4CAF8C, var(--gold), #E85C5C);
+    border-radius: 10px;
+    position: relative;
+  }
+
+  .spectrum-marker {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--white);
+    border: 3px solid var(--gold);
+    box-shadow: 0 0 0 4px rgba(201,168,76,0.3);
+    transition: left 1s ease;
+  }
+
+  .spectrum-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--gray);
+  }
+
+  /* QR Section */
+  .qr-section {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 16px;
+    padding: 28px;
+    text-align: center;
+  }
+
+  .qr-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+
+  .qr-subtitle {
+    font-size: 12px;
+    color: var(--gray);
+    margin-bottom: 20px;
+  }
+
+  #qrcode {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+
+  #qrcode canvas, #qrcode img {
+    border-radius: 12px;
+    padding: 12px;
+    background: white;
+  }
+
+  .qr-url {
+    font-size: 11px;
+    color: var(--gray);
+    word-break: break-all;
+    background: rgba(0,0,0,0.2);
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+  }
+
+  .btn-copy {
+    background: transparent;
+    border: 1.5px solid rgba(201,168,76,0.4);
+    color: var(--gold-light);
+    padding: 10px 24px;
+    border-radius: 50px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s;
+    margin-right: 10px;
+  }
+
+  .btn-copy:hover { background: rgba(201,168,76,0.1); }
+
+  .btn-restart {
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: var(--navy);
+    border: none;
+    padding: 10px 24px;
+    border-radius: 50px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+
+  .btn-restart:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(201,168,76,0.3); }
+
+  .divider {
+    height: 1px;
+    background: rgba(255,255,255,0.07);
+    margin: 30px 0;
+  }
+
+  @media (max-width: 600px) {
+    .intro-card, .question-card, .result-header, .result-body { padding: 28px 24px; }
+    .profile-traits { grid-template-columns: 1fr; }
+    .meta-row { gap: 16px; }
+  }
+
+  .no-select { user-select: none; }
+
+  /* Answered dot row */
+  .dots-row {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    transition: background 0.3s;
+  }
+
+  .dot.answered { background: var(--gold); }
+  .dot.current { background: rgba(201,168,76,0.4); border: 1px solid var(--gold); }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ===== INTRO ===== -->
+  <div class="screen active" id="screen-intro">
+    <div class="intro-card">
+      <div class="badge">Diagnóstico de Liderazgo</div>
+      <h1>¿Qué tipo de<br><span>líder eres</span> hoy?</h1>
+      <p class="intro-desc">15 preguntas situacionales diseñadas para revelar tu perfil real de liderazgo. Sin respuestas correctas ni incorrectas — solo un espejo honesto de tu estilo actual.</p>
+      <div class="meta-row">
+        <div class="meta-item">
+          <div class="icon">📋</div>
+          <span>15 preguntas</span>
+        </div>
+        <div class="meta-item">
+          <div class="icon">⏱️</div>
+          <span>5–8 minutos</span>
+        </div>
+        <div class="meta-item">
+          <div class="icon">🎯</div>
+          <span>8 perfiles de resultado</span>
+        </div>
+      </div>
+      <button class="btn-start no-select" onclick="startQuiz()">Comenzar diagnóstico →</button>
+    </div>
+  </div>
+
+  <!-- ===== QUIZ ===== -->
+  <div class="screen" id="screen-quiz">
+    <div class="progress-wrap">
+      <div class="progress-top">
+        <span class="progress-label">Progreso</span>
+        <span class="progress-counter" id="progress-counter">1 / 15</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progress-bar" style="width:6.67%"></div>
+      </div>
+      <div class="dots-row" id="dots-row"></div>
+    </div>
+
+    <div class="question-card">
+      <div class="section-tag" id="q-section">I. Inclusión y Comunicación</div>
+      <div class="question-text" id="q-text"></div>
+      <div class="options-list" id="options-list"></div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn-nav btn-prev" id="btn-prev" onclick="prevQuestion()" style="visibility:hidden">← Anterior</button>
+      <button class="btn-nav btn-next" id="btn-next" onclick="nextQuestion()" disabled>Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- ===== RESULTS ===== -->
+  <div class="screen" id="screen-result">
+    <div class="result-card">
+      <div class="result-header">
+        <div class="score-ring">
+          <div class="score-number" id="res-score">0</div>
+          <div class="score-label">puntos</div>
+        </div>
+        <div class="result-profile-num" id="res-profile-num">Perfil 1</div>
+        <div class="result-title" id="res-title">—</div>
+        <div class="result-range" id="res-range">Rango: 15–24 puntos</div>
+      </div>
+
+      <div class="result-body">
+        <p class="result-desc" id="res-desc"></p>
+
+        <div class="profile-traits" id="res-traits"></div>
+
+        <div class="score-spectrum">
+          <div class="spectrum-title">Tu posición en el espectro de liderazgo</div>
+          <div class="spectrum-bar-bg">
+            <div class="spectrum-fill" style="width:100%">
+              <div class="spectrum-marker" id="spectrum-marker" style="left:0%"></div>
+            </div>
+          </div>
+          <div class="spectrum-labels">
+            <span>Tradicional (15)</span>
+            <span>Transición (45)</span>
+            <span>Transformacional (75)</span>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="qr-section">
+          <div class="qr-title">📱 Comparte esta herramienta</div>
+          <div class="qr-subtitle">Escanea el QR para que tus colaboradores también completen el diagnóstico</div>
+          <div id="qrcode"></div>
+          <div class="qr-url" id="qr-url-text">Cargando URL...</div>
+          <button class="btn-copy" onclick="copyURL()">📋 Copiar enlace</button>
+          <button class="btn-restart" onclick="restartQuiz()">↩ Volver a intentar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const questions = [
+  {
+    section: "I. Inclusión y Comunicación",
+    text: "Ante un equipo con una amplia variedad de experiencias y años de servicio, ¿cómo define el éxito?",
+    options: [
+      { letter: "A", text: "El logro de los objetivos sin desviaciones del plan original.", score: 2 },
+      { letter: "B", text: "La capacidad de los miembros más jóvenes para aprender y seguir los métodos establecidos.", score: 1 },
+      { letter: "C", text: "La armonía y el respeto mutuo, manteniendo las líneas de reporte claras.", score: 3 },
+      { letter: "D", text: "El desarrollo de soluciones innovadoras que combinan la experiencia profunda con perspectivas frescas.", score: 5 },
+      { letter: "E", text: "El cumplimiento de las tareas asignadas por el líder.", score: 4 }
+    ]
+  },
+  {
+    section: "I. Inclusión y Comunicación",
+    text: "¿Cuál es su método preferido para anunciar una decisión estratégica importante y compleja?",
+    options: [
+      { letter: "A", text: "Una presentación formal de resultados, seguida de un memorándum de la dirección.", score: 1 },
+      { letter: "B", text: "Un podcast o video corto seguido de un canal de preguntas y respuestas abierto (Q&A).", score: 4 },
+      { letter: "C", text: "Un correo electrónico detallado con todos los antecedentes y anexos.", score: 2 },
+      { letter: "D", text: "Una reunión presencial obligatoria con diapositivas de soporte.", score: 3 },
+      { letter: "E", text: "Un mensaje breve en una plataforma de chat grupal y luego un email de seguimiento.", score: 5 }
+    ]
+  },
+  {
+    section: "I. Inclusión y Comunicación",
+    text: "Al integrar una nueva tecnología o metodología de trabajo sugerida por un colaborador, ¿cuál es su prioridad?",
+    options: [
+      { letter: "A", text: "Que la herramienta se adapte a los sistemas que ya domina la mayoría del equipo.", score: 2 },
+      { letter: "B", text: "Que el proponente demuestre un retorno de inversión inmediato.", score: 1 },
+      { letter: "C", text: "Evaluarla solo si el liderazgo senior ha dado la luz verde.", score: 3 },
+      { letter: "D", text: "Involucrar al proponente en el liderazgo de su implementación y capacitación a todos.", score: 5 },
+      { letter: "E", text: "Probarla en un equipo aislado para no interrumpir la operación principal.", score: 4 }
+    ]
+  },
+  {
+    section: "II. Empatía y Motivación",
+    text: "Si una iniciativa crucial falla, ¿dónde focaliza su análisis?",
+    options: [
+      { letter: "A", text: "En el individuo o área que cometió el error visible.", score: 1 },
+      { letter: "B", text: "En los procedimientos estándar que se incumplieron.", score: 2 },
+      { letter: "C", text: "En cómo asignar recursos para mitigar el daño rápidamente.", score: 3 },
+      { letter: "D", text: "En las fallas sistémicas que impidieron a la persona o equipo tener éxito (seguridad psicológica).", score: 5 },
+      { letter: "E", text: "En documentar el error para evitar que se repita en el futuro.", score: 4 }
+    ]
+  },
+  {
+    section: "II. Empatía y Motivación",
+    text: "¿Cómo demuestra la valoración del esfuerzo de un miembro del equipo en el día a día?",
+    options: [
+      { letter: "A", text: "Asegurándome de que su compensación esté acorde al mercado.", score: 2 },
+      { letter: "B", text: "Con una retroalimentación positiva personalizada y específica en tiempo real.", score: 5 },
+      { letter: "C", text: "Dando un ascenso o un bono al final del ciclo de evaluación.", score: 3 },
+      { letter: "D", text: "Mencionando su buen desempeño en reuniones con managers superiores.", score: 4 },
+      { letter: "E", text: "Ofreciendo más responsabilidades y proyectos de alta visibilidad.", score: 1 }
+    ]
+  },
+  {
+    section: "II. Empatía y Motivación",
+    text: "Para que el equipo se mantenga motivado, usted prioriza...",
+    options: [
+      { letter: "A", text: "La disciplina y el cumplimiento estricto de los horarios.", score: 1 },
+      { letter: "B", text: "Recordar el impacto que su trabajo tiene en el cliente final o la sociedad.", score: 5 },
+      { letter: "C", text: "La compensación económica y las oportunidades de crecimiento individual.", score: 3 },
+      { letter: "D", text: "Un ambiente de trabajo tranquilo y libre de presión excesiva.", score: 2 },
+      { letter: "E", text: "Que el equipo se sienta en control de su propio calendario y método de trabajo.", score: 4 }
+    ]
+  },
+  {
+    section: "III. Visión y Desarrollo",
+    text: "¿Con qué frecuencia y en qué formato solicita retroalimentación honesta sobre su propio desempeño como líder?",
+    options: [
+      { letter: "A", text: "Solo en la revisión de desempeño formal (anual o semestral).", score: 2 },
+      { letter: "B", text: "Cuando se siente inseguro sobre una decisión importante que ha tomado.", score: 1 },
+      { letter: "C", text: "De forma constante, creando canales anónimos y pidiendo feedback 360° (incluidos juniors).", score: 5 },
+      { letter: "D", text: "En reuniones individuales con mis reportes directos clave.", score: 3 },
+      { letter: "E", text: "Permito que el equipo me dé feedback si siente la necesidad.", score: 4 }
+    ]
+  },
+  {
+    section: "III. Visión y Desarrollo",
+    text: "Al delegar un proyecto de alta complejidad, su enfoque es...",
+    options: [
+      { letter: "A", text: "Describir el paso-a-paso para garantizar que se sigan los procesos.", score: 1 },
+      { letter: "B", text: "Definir el resultado final esperado y dejar que el equipo elija la metodología y el ritmo.", score: 4 },
+      { letter: "C", text: "Enfocarse en el 'por qué' de la tarea, permitiendo la autonomía total en el 'cómo' y el 'cuándo'.", score: 5 },
+      { letter: "D", text: "Entregar el proyecto solo a los miembros más experimentados del equipo.", score: 2 },
+      { letter: "E", text: "Establecer puntos de control diarios para monitorear el progreso y ajustar.", score: 3 }
+    ]
+  },
+  {
+    section: "III. Visión y Desarrollo",
+    text: "¿Cuál es la mejor forma de desarrollar talento y nuevas habilidades en su equipo?",
+    options: [
+      { letter: "A", text: "Invertir solo en la formación que la empresa paga para todos.", score: 2 },
+      { letter: "B", text: "Asignar nuevos desafíos y proyectos fuera de su zona de confort.", score: 4 },
+      { letter: "C", text: "Crear programas de mentoring donde líderes junior enseñen tecnología a los senior y viceversa.", score: 5 },
+      { letter: "D", text: "Ofrecer coaching individual solo a quienes muestran alto potencial de ascenso.", score: 3 },
+      { letter: "E", text: "Esperar a que el colaborador exprese su necesidad y lo pague parcialmente.", score: 1 }
+    ]
+  },
+  {
+    section: "IV. Agilidad y Proyección",
+    text: "Ante un desacuerdo entre un método tradicional y uno innovador, usted...",
+    options: [
+      { letter: "A", text: "Pide a ambas partes que presenten datos, y se inclina por el que es más rápido/barato.", score: 3 },
+      { letter: "B", text: "Toma una decisión, basándose en la trayectoria del método que históricamente ha funcionado.", score: 1 },
+      { letter: "C", text: "Facilita la creación de un método completamente nuevo que integre lo mejor de ambos enfoques.", score: 5 },
+      { letter: "D", text: "Permite que el equipo decida por consenso o votación.", score: 2 },
+      { letter: "E", text: "Da luz verde al método innovador para que demuestre su valor en un piloto.", score: 4 }
+    ]
+  },
+  {
+    section: "IV. Agilidad y Proyección",
+    text: "¿Qué tan importante es la interacción social en la oficina para la productividad?",
+    options: [
+      { letter: "A", text: "La interacción social sucede de forma natural y no necesita ser promovida.", score: 2 },
+      { letter: "B", text: "Es importante para la cultura, pero el trabajo se puede hacer desde cualquier lugar.", score: 4 },
+      { letter: "C", text: "Es crítica; la creatividad y el control de calidad dependen de la presencia física constante.", score: 1 },
+      { letter: "D", text: "Es importante, siempre y cuando sea breve y no interrumpa el flujo de trabajo individual.", score: 3 },
+      { letter: "E", text: "Fomentamos reuniones sociales y team building virtuales y presenciales, priorizando el resultado.", score: 5 }
+    ]
+  },
+  {
+    section: "IV. Agilidad y Proyección",
+    text: "¿Cómo debe involucrarse el equipo base en la planificación estratégica a largo plazo?",
+    options: [
+      { letter: "A", text: "Solo deben estar informados de las metas trimestrales una vez definidas.", score: 1 },
+      { letter: "B", text: "Se pueden escuchar sugerencias informales en reuniones de café.", score: 2 },
+      { letter: "C", text: "Deben aportar información y datos, pero no tomar decisiones.", score: 3 },
+      { letter: "D", text: "Un equipo representativo de todas las áreas debe participar en sesiones de brainstorming.", score: 4 },
+      { letter: "E", text: "Se deben formar grupos focales con representación de cada generación para una visión holística.", score: 5 }
+    ]
+  },
+  {
+    section: "V. Desafío y Resiliencia",
+    text: "En una situación de alta presión y fecha límite, su prioridad es...",
+    options: [
+      { letter: "A", text: "Redistribuir el trabajo y cancelar tareas no esenciales para reducir inmediatamente la sobrecarga.", score: 5 },
+      { letter: "B", text: "Recordarle al equipo la importancia de cumplir y motivarlos con incentivos.", score: 1 },
+      { letter: "C", text: "Tomar el control directo para asegurar que el trabajo se haga a tiempo.", score: 2 },
+      { letter: "D", text: "Sugerir que todos tomen un descanso y luego vuelvan enfocados.", score: 3 },
+      { letter: "E", text: "Analizar por qué la planificación falló antes de continuar trabajando.", score: 4 }
+    ]
+  },
+  {
+    section: "V. Desafío y Resiliencia",
+    text: "¿Cuál es su respuesta cultural ante el burnout y la sobrecarga laboral?",
+    options: [
+      { letter: "A", text: "Parte del trabajo es aprender a manejar la presión; es desarrollo personal.", score: 1 },
+      { letter: "B", text: "Ofrezco acceso a servicios de salud mental si el empleado lo solicita.", score: 3 },
+      { letter: "C", text: "Implemento días libres sorpresa o 'viernes cortos' de vez en cuando.", score: 2 },
+      { letter: "D", text: "Diseño activamente flujos de trabajo con límites claros y promuevo el bienestar proactivamente.", score: 5 },
+      { letter: "E", text: "Roto las tareas más estresantes entre los miembros del equipo.", score: 4 }
+    ]
+  },
+  {
+    section: "V. Desafío y Resiliencia",
+    text: "¿Cuál considera que es el principal legado de su liderazgo?",
+    options: [
+      { letter: "A", text: "El crecimiento sostenido de las métricas clave de mi departamento.", score: 1 },
+      { letter: "B", text: "La creación de un equipo de líderes que siguen mis pasos.", score: 2 },
+      { letter: "C", text: "Que la gente bajo mi mando se convierta en mejor versión de sí misma.", score: 4 },
+      { letter: "D", text: "Un sistema de procesos de trabajo estandarizado y de alta calidad.", score: 3 },
+      { letter: "E", text: "Haber creado una cultura donde la experiencia y la frescura de ideas conviven para transformar la organización.", score: 5 }
+    ]
+  }
+];
+
+const profiles = [
+  {
+    num: "Perfil 1", min: 15, max: 24,
+    title: "El Regidor Autocrático",
+    range: "15 – 24 puntos",
+    desc: "Tu estilo de liderazgo se basa en la autoridad, el control y la jerarquía. Priorizas la eficiencia sobre la participación y el resultado sobre el proceso. Aunque efectivo en entornos de alta presión o crisis, este estilo puede generar equipos dependientes, con poca iniciativa propia y alta rotación generacional.",
+    traits: [
+      { icon: "🎯", title: "Fortaleza", text: "Decisiones rápidas y claras bajo presión" },
+      { icon: "⚠️", title: "Riesgo", text: "Frena la innovación y genera dependencia" },
+      { icon: "🔑", title: "Siguiente paso", text: "Practica delegar el 'cómo', no solo el 'qué'" },
+      { icon: "📊", title: "Brecha principal", text: "Seguridad psicológica y feedback ascendente" }
+    ]
+  },
+  {
+    num: "Perfil 2", min: 25, max: 34,
+    title: "El Supervisor Transaccional",
+    range: "25 – 34 puntos",
+    desc: "Lideras con base en el intercambio: metas claras, recompensas por resultados, consecuencias por incumplimiento. Es un estilo predecible y estable, pero frecuentemente subestima la motivación intrínseca. Las generaciones más jóvenes rara vez se comprometen profundamente bajo este modelo.",
+    traits: [
+      { icon: "✅", title: "Fortaleza", text: "Claridad de expectativas y consistencia" },
+      { icon: "⚠️", title: "Riesgo", text: "Bajo compromiso emocional del equipo" },
+      { icon: "🔑", title: "Siguiente paso", text: "Conecta el trabajo con propósito, no solo con metas" },
+      { icon: "📊", title: "Brecha principal", text: "Motivación intrínseca y desarrollo de talento" }
+    ]
+  },
+  {
+    num: "Perfil 3", min: 35, max: 42,
+    title: "El Adaptador a la Fuerza",
+    range: "35 – 42 puntos",
+    desc: "Reconoces la necesidad del cambio y haces ajustes, pero desde una postura reactiva más que estratégica. Combinas elementos tradicionales y modernos sin una integración coherente, lo que puede generar mensajes mixtos en tu equipo. Estás en el umbral de una transformación real.",
+    traits: [
+      { icon: "🔄", title: "Fortaleza", text: "Flexibilidad y capacidad de ajuste táctico" },
+      { icon: "⚠️", title: "Riesgo", text: "Inconsistencia que genera confusión en el equipo" },
+      { icon: "🔑", title: "Siguiente paso", text: "Define una filosofía de liderazgo propia y coherente" },
+      { icon: "📊", title: "Brecha principal", text: "Consistencia y visión de largo plazo" }
+    ]
+  },
+  {
+    num: "Perfil 4", min: 43, max: 50,
+    title: "El Mentor de la Generación de Transición",
+    range: "43 – 50 puntos",
+    desc: "Tienes conciencia generacional y valoras la transferencia de conocimiento. Empiezas a ver el potencial de los equipos diversos y buscas crear puentes entre la experiencia y la innovación. Aún hay margen para profundizar en la autonomía real y el liderazgo servicial.",
+    traits: [
+      { icon: "🌉", title: "Fortaleza", text: "Facilitas el puente entre experiencia e innovación" },
+      { icon: "⚠️", title: "Riesgo", text: "Mentoring sin suficiente autonomía real" },
+      { icon: "🔑", title: "Siguiente paso", text: "Cede el 'cómo' y confía más en tu equipo" },
+      { icon: "📊", title: "Brecha principal", text: "Autonomía y seguridad psicológica plena" }
+    ]
+  },
+  {
+    num: "Perfil 5", min: 51, max: 58,
+    title: "El Constructor de Puentes Empáticos",
+    range: "51 – 58 puntos",
+    desc: "Lideras con empatía genuina y tienes alta conciencia de las necesidades individuales de tu equipo. Entiendes que las motivaciones no son universales y adaptas tu estilo. Eres un punto de equilibrio entre el liderazgo tradicional y el transformacional.",
+    traits: [
+      { icon: "❤️", title: "Fortaleza", text: "Alta inteligencia emocional y empatía activa" },
+      { icon: "⚠️", title: "Riesgo", text: "Puede priorizar armonía sobre desafíos necesarios" },
+      { icon: "🔑", title: "Siguiente paso", text: "Aprende a dar retroalimentación difícil con compasión" },
+      { icon: "📊", title: "Brecha principal", text: "Liderazgo en conflicto y toma de decisiones difíciles" }
+    ]
+  },
+  {
+    num: "Perfil 6", min: 59, max: 66,
+    title: "El Arquitecto del Propósito",
+    range: "59 – 66 puntos",
+    desc: "Conectas sistemáticamente el trabajo diario con un propósito mayor. Tu equipo entiende el 'por qué' antes del 'qué' y el 'cómo'. Tienes alta orientación hacia el desarrollo humano y la innovación colaborativa. Eres un líder que genera líderes.",
+    traits: [
+      { icon: "🏗️", title: "Fortaleza", text: "Construyes cultura con propósito explícito" },
+      { icon: "⚠️", title: "Riesgo", text: "Puede perder agilidad operativa por exceso de visión" },
+      { icon: "🔑", title: "Siguiente paso", text: "Equilibra el pensamiento estratégico con ejecución táctica" },
+      { icon: "📊", title: "Brecha principal", text: "Velocidad de decisión bajo incertidumbre" }
+    ]
+  },
+  {
+    num: "Perfil 7", min: 67, max: 71,
+    title: "El Estratega Inclusivo",
+    range: "67 – 71 puntos",
+    desc: "Dominas el arte de integrar diversidad generacional, cognitiva y funcional en decisiones estratégicas. Tu equipo se siente genuinamente parte del rumbo organizacional. Practicas el liderazgo sistémico: entiendes que los problemas son complejos y que las soluciones requieren múltiples perspectivas.",
+    traits: [
+      { icon: "🌐", title: "Fortaleza", text: "Liderazgo sistémico e integración de diversidad" },
+      { icon: "⚠️", title: "Riesgo", text: "Los procesos inclusivos pueden ser lentos en crisis" },
+      { icon: "🔑", title: "Siguiente paso", text: "Desarrolla protocolos de decisión rápida para contextos caóticos" },
+      { icon: "📊", title: "Brecha principal", text: "Agilidad en escenarios de alta urgencia" }
+    ]
+  },
+  {
+    num: "Perfil 8", min: 72, max: 75,
+    title: "El Líder de la Transformación Continua",
+    range: "72 – 75 puntos",
+    desc: "Encarnas el modelo ideal de liderazgo para la era de la transformación digital: combinas visión estratégica, inteligencia emocional, conciencia generacional y vocación de desarrollo. No solo lideras el cambio — eres un ecosistema de cambio en sí mismo. Tu mayor reto ahora es replicarte.",
+    traits: [
+      { icon: "🚀", title: "Fortaleza", text: "Liderazgo transformacional auténtico y sostenible" },
+      { icon: "💡", title: "Distinción", text: "Generas líderes, no seguidores" },
+      { icon: "🔑", title: "Siguiente paso", text: "Codifica tu modelo y conviértete en mentor de otros líderes" },
+      { icon: "🌟", title: "Legado", text: "Cultura de aprendizaje continuo que trasciende tu gestión" }
+    ]
+  }
+];
+
+let currentQ = 0;
+let answers = new Array(15).fill(null);
+
+function buildDots() {
+  const row = document.getElementById('dots-row');
+  row.innerHTML = '';
+  for (let i = 0; i < 15; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' current' : '');
+    d.id = 'dot-' + i;
+    row.appendChild(d);
+  }
+}
+
+function updateDots() {
+  for (let i = 0; i < 15; i++) {
+    const d = document.getElementById('dot-' + i);
+    d.className = 'dot';
+    if (answers[i] !== null) d.classList.add('answered');
+    if (i === currentQ) d.classList.add('current');
+  }
+}
+
+function startQuiz() {
+  document.getElementById('screen-intro').classList.remove('active');
+  document.getElementById('screen-quiz').classList.add('active');
+  buildDots();
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = questions[currentQ];
+  document.getElementById('q-section').textContent = q.section;
+  document.getElementById('q-text').textContent = q.text;
+
+  const ol = document.getElementById('options-list');
+  ol.innerHTML = '';
+  q.options.forEach((opt, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn' + (answers[currentQ] === idx ? ' selected' : '');
+    btn.innerHTML = `<span class="option-letter">${opt.letter}</span><span>${opt.text}</span>`;
+    btn.onclick = () => selectOption(idx);
+    ol.appendChild(btn);
+  });
+
+  const total = questions.length;
+  document.getElementById('progress-counter').textContent = `${currentQ + 1} / ${total}`;
+  document.getElementById('progress-bar').style.width = `${((currentQ + 1) / total) * 100}%`;
+  document.getElementById('btn-prev').style.visibility = currentQ === 0 ? 'hidden' : 'visible';
+
+  const nextBtn = document.getElementById('btn-next');
+  nextBtn.disabled = answers[currentQ] === null;
+  nextBtn.textContent = currentQ === 14 ? 'Ver mi resultado →' : 'Siguiente →';
+
+  updateDots();
+}
+
+function selectOption(idx) {
+  answers[currentQ] = idx;
+  document.querySelectorAll('.option-btn').forEach((b, i) => {
+    b.classList.toggle('selected', i === idx);
+  });
+  document.getElementById('btn-next').disabled = false;
+}
+
+function nextQuestion() {
+  if (answers[currentQ] === null) return;
+  if (currentQ < 14) {
+    currentQ++;
+    renderQuestion();
+  } else {
+    showResults();
+  }
+}
+
+function prevQuestion() {
+  if (currentQ > 0) { currentQ--; renderQuestion(); }
+}
+
+function calcScore() {
+  let total = 0;
+  answers.forEach((ans, qi) => {
+    if (ans !== null) total += questions[qi].options[ans].score;
+  });
+  return total;
+}
+
+function getProfile(score) {
+  return profiles.find(p => score >= p.min && score <= p.max) || profiles[0];
+}
+
+function showResults() {
+  const score = calcScore();
+  const profile = getProfile(score);
+
+  document.getElementById('screen-quiz').classList.remove('active');
+  document.getElementById('screen-result').classList.add('active');
+
+  document.getElementById('res-score').textContent = score;
+  document.getElementById('res-profile-num').textContent = profile.num;
+  document.getElementById('res-title').textContent = profile.title;
+  document.getElementById('res-range').textContent = 'Rango: ' + profile.range;
+  document.getElementById('res-desc').textContent = profile.desc;
+
+  // Traits
+  const traitsEl = document.getElementById('res-traits');
+  traitsEl.innerHTML = profile.traits.map(t =>
+    `<div class="trait-item"><div class="trait-icon">${t.icon}</div><div class="trait-title">${t.title}</div><div class="trait-text">${t.text}</div></div>`
+  ).join('');
+
+  // Spectrum marker
+  const pct = ((score - 15) / (75 - 15)) * 100;
+  setTimeout(() => {
+    document.getElementById('spectrum-marker').style.left = pct + '%';
+  }, 300);
+
+  // QR
+  const url = window.location.href.split('?')[0];
+  document.getElementById('qr-url-text').textContent = url;
+  document.getElementById('qrcode').innerHTML = '';
+  new QRCode(document.getElementById('qrcode'), {
+    text: url,
+    width: 160,
+    height: 160,
+    colorDark: '#0D1B2A',
+    colorLight: '#FFFFFF',
+    correctLevel: QRCode.CorrectLevel.M
+  });
+}
+
+function copyURL() {
+  const url = window.location.href.split('?')[0];
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.querySelector('.btn-copy');
+    btn.textContent = '✅ ¡Copiado!';
+    setTimeout(() => btn.textContent = '📋 Copiar enlace', 2000);
+  });
+}
+
+function restartQuiz() {
+  currentQ = 0;
+  answers = new Array(15).fill(null);
+  document.getElementById('screen-result').classList.remove('active');
+  document.getElementById('screen-intro').classList.add('active');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagnóstico de Liderazgo Generacional</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root {
+    --navy: #0D1B2A;
+    --navy-mid: #1B2D40;
+    --navy-light: #243447;
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --cream: #F5F0E8;
+    --white: #FFFFFF;
+    --gray: #8A9BB0;
+    --text: #E8EDF2;
+    --radius: 16px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--navy);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(ellipse at 30% 20%, rgba(201,168,76,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 80%, rgba(13,27,42,0.8) 0%, transparent 50%);
+    pointer-events: none; z-index: 0;
+  }
+  .container { width: 100%; max-width: 780px; position: relative; z-index: 1; }
+  .screen { display: none; animation: fadeIn 0.5s ease; }
+  .screen.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* INTRO */
+  .intro-card {
+    background: var(--navy-mid);
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 24px;
+    padding: 60px 50px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .intro-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+  .badge {
+    display: inline-block;
+    background: rgba(201,168,76,0.15);
+    border: 1px solid rgba(201,168,76,0.4);
+    color: var(--gold-light);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 6px 18px;
+    border-radius: 20px;
+    margin-bottom: 30px;
+  }
+  h1 { font-family: 'Playfair Display', serif; font-size: clamp(28px, 5vw, 44px); font-weight: 900; line-height: 1.15; color: var(--white); margin-bottom: 20px; }
+  h1 span { color: var(--gold); }
+  .intro-desc { font-size: 16px; line-height: 1.7; color: var(--gray); max-width: 520px; margin: 0 auto 40px; }
+  .meta-row { display: flex; justify-content: center; gap: 30px; margin-bottom: 40px; flex-wrap: wrap; }
+  .meta-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--gray); }
+  .meta-item .icon { width: 32px; height: 32px; background: rgba(201,168,76,0.12); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+  .btn-start {
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: var(--navy);
+    border: none;
+    padding: 16px 48px;
+    border-radius: 50px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    letter-spacing: 0.5px;
+  }
+  .btn-start:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(201,168,76,0.4); }
+
+  /* PROGRESS */
+  .progress-wrap { margin-bottom: 24px; }
+  .progress-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .progress-label { font-size: 12px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--gray); }
+  .progress-counter { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: var(--gold); }
+  .progress-bar-bg { height: 4px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold-light)); border-radius: 4px; transition: width 0.5s ease; }
+
+  /* QUESTION */
+  .question-card { background: var(--navy-mid); border: 1px solid rgba(255,255,255,0.07); border-radius: var(--radius); padding: 40px; margin-bottom: 20px; }
+  .section-tag { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); background: rgba(201,168,76,0.12); padding: 4px 12px; border-radius: 20px; margin-bottom: 16px; }
+  .theory-tag { display: inline-block; font-size: 10px; letter-spacing: 1px; color: var(--gray); background: rgba(255,255,255,0.05); padding: 3px 10px; border-radius: 20px; margin-bottom: 16px; margin-left: 8px; }
+  .question-text { font-family: 'Playfair Display', serif; font-size: clamp(17px, 2.5vw, 21px); font-weight: 700; line-height: 1.4; color: var(--white); margin-bottom: 28px; }
+  .options-list { display: flex; flex-direction: column; gap: 10px; }
+  .option-btn {
+    display: flex; align-items: flex-start; gap: 14px;
+    background: rgba(255,255,255,0.03);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 14px 18px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-align: left;
+    width: 100%;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .option-btn:hover { background: rgba(201,168,76,0.08); border-color: rgba(201,168,76,0.4); transform: translateX(4px); }
+  .option-btn.selected { background: rgba(201,168,76,0.15); border-color: var(--gold); color: var(--white); }
+  .option-letter { min-width: 26px; height: 26px; background: rgba(255,255,255,0.06); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--gray); transition: all 0.25s; flex-shrink: 0; margin-top: 1px; }
+  .option-btn.selected .option-letter { background: var(--gold); color: var(--navy); }
+
+  /* NAV */
+  .nav-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .btn-nav { padding: 12px 28px; border-radius: 50px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.25s; border: none; }
+  .btn-prev { background: transparent; border: 1.5px solid rgba(255,255,255,0.15); color: var(--gray); }
+  .btn-prev:hover { border-color: var(--gray); color: var(--white); }
+  .btn-next { background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: var(--navy); font-weight: 700; margin-left: auto; }
+  .btn-next:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(201,168,76,0.35); }
+  .btn-next:disabled { opacity: 0.35; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  /* RESULTS */
+  .result-card { background: var(--navy-mid); border: 1px solid rgba(201,168,76,0.25); border-radius: 24px; overflow: hidden; }
+  .result-header { background: linear-gradient(135deg, var(--navy-light), var(--navy-mid)); padding: 50px 50px 40px; text-align: center; border-bottom: 1px solid rgba(201,168,76,0.15); position: relative; }
+  .result-header::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 60px; height: 3px; background: var(--gold); border-radius: 3px; }
+  .score-ring { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--gold); display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto 24px; background: rgba(201,168,76,0.08); position: relative; }
+  .score-ring::before { content: ''; position: absolute; inset: -8px; border-radius: 50%; border: 1px solid rgba(201,168,76,0.2); }
+  .score-number { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 900; color: var(--gold); line-height: 1; }
+  .score-label { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gray); margin-top: 2px; }
+  .result-profile-num { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+  .result-title { font-family: 'Playfair Display', serif; font-size: clamp(22px, 4vw, 32px); font-weight: 900; color: var(--white); margin-bottom: 12px; }
+  .result-range { font-size: 12px; color: var(--gray); }
+  .result-body { padding: 40px 50px; }
+  .result-desc { font-size: 15px; line-height: 1.75; color: #BDC9D9; margin-bottom: 30px; text-align: center; }
+  .profile-traits { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 36px; }
+  .trait-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 16px; }
+  .trait-icon { font-size: 20px; margin-bottom: 6px; }
+  .trait-title { font-size: 12px; font-weight: 700; color: var(--gold-light); margin-bottom: 4px; }
+  .trait-text { font-size: 12px; color: var(--gray); line-height: 1.5; }
+  .score-spectrum { background: rgba(255,255,255,0.04); border-radius: 12px; padding: 20px; margin-bottom: 30px; }
+  .spectrum-title { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gray); margin-bottom: 14px; }
+  .spectrum-bar-bg { height: 10px; background: rgba(255,255,255,0.08); border-radius: 10px; position: relative; margin-bottom: 10px; }
+  .spectrum-fill { height: 100%; background: linear-gradient(90deg, #4CAF8C, var(--gold), #E85C5C); border-radius: 10px; position: relative; }
+  .spectrum-marker { position: absolute; top: 50%; transform: translate(-50%, -50%); width: 18px; height: 18px; border-radius: 50%; background: var(--white); border: 3px solid var(--gold); box-shadow: 0 0 0 4px rgba(201,168,76,0.3); transition: left 1s ease; }
+  .spectrum-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--gray); }
+  .qr-section { background: rgba(255,255,255,0.03); border: 1px solid rgba(201,168,76,0.2); border-radius: 16px; padding: 28px; text-align: center; }
+  .qr-title { font-size: 13px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
+  .qr-subtitle { font-size: 12px; color: var(--gray); margin-bottom: 20px; }
+  #qrcode { display: flex; justify-content: center; margin-bottom: 16px; }
+  #qrcode canvas, #qrcode img { border-radius: 12px; padding: 12px; background: white; }
+  .qr-url { font-size: 11px; color: var(--gray); word-break: break-all; background: rgba(0,0,0,0.2); padding: 8px 12px; border-radius: 8px; margin-bottom: 16px; }
+  .btn-copy { background: transparent; border: 1.5px solid rgba(201,168,76,0.4); color: var(--gold-light); padding: 10px 24px; border-radius: 50px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.25s; margin-right: 10px; }
+  .btn-copy:hover { background: rgba(201,168,76,0.1); }
+  .btn-restart { background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: var(--navy); border: none; padding: 10px 24px; border-radius: 50px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.25s; }
+  .btn-restart:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(201,168,76,0.3); }
+  .divider { height: 1px; background: rgba(255,255,255,0.07); margin: 30px 0; }
+  .dots-row { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; margin-top: 12px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.1); transition: background 0.3s; }
+  .dot.answered { background: var(--gold); }
+  .dot.current { background: rgba(201,168,76,0.4); border: 1px solid var(--gold); }
+  @media (max-width: 600px) {
+    .intro-card, .question-card, .result-header, .result-body { padding: 28px 24px; }
+    .profile-traits { grid-template-columns: 1fr; }
+    .meta-row { gap: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- INTRO -->
+  <div class="screen active" id="screen-intro">
+    <div class="intro-card">
+      <div class="badge">Diagnóstico de Liderazgo</div>
+      <h1>¿Qué tipo de<br><span>líder eres</span> hoy?</h1>
+      <p class="intro-desc">15 escenarios reales de toma de decisiones para revelar tu perfil de liderazgo. No hay respuestas correctas ni incorrectas — solo un espejo honesto de cómo lideras.</p>
+      <div class="meta-row">
+        <div class="meta-item"><div class="icon">📋</div><span>15 escenarios</span></div>
+        <div class="meta-item"><div class="icon">⏱️</div><span>8–12 minutos</span></div>
+        <div class="meta-item"><div class="icon">🎯</div><span>8 perfiles de resultado</span></div>
+      </div>
+      <button class="btn-start" onclick="startQuiz()">Comenzar diagnóstico →</button>
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <div class="screen" id="screen-quiz">
+    <div class="progress-wrap">
+      <div class="progress-top">
+        <span class="progress-label">Progreso</span>
+        <span class="progress-counter" id="progress-counter">1 / 15</span>
+      </div>
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-bar" style="width:6.67%"></div></div>
+      <div class="dots-row" id="dots-row"></div>
+    </div>
+    <div class="question-card">
+      <div>
+        <span class="section-tag" id="q-section"></span>
+        <span class="theory-tag" id="q-theory"></span>
+      </div>
+      <div class="question-text" id="q-text"></div>
+      <div class="options-list" id="options-list"></div>
+    </div>
+    <div class="nav-row">
+      <button class="btn-nav btn-prev" id="btn-prev" onclick="prevQuestion()" style="visibility:hidden">← Anterior</button>
+      <button class="btn-nav btn-next" id="btn-next" onclick="nextQuestion()" disabled>Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="screen" id="screen-result">
+    <div class="result-card">
+      <div class="result-header">
+        <div class="score-ring">
+          <div class="score-number" id="res-score">0</div>
+          <div class="score-label">puntos</div>
+        </div>
+        <div class="result-profile-num" id="res-profile-num">Perfil 1</div>
+        <div class="result-title" id="res-title">—</div>
+        <div class="result-range" id="res-range">Rango: 15–24 puntos</div>
+      </div>
+      <div class="result-body">
+        <p class="result-desc" id="res-desc"></p>
+        <div class="profile-traits" id="res-traits"></div>
+        <div class="score-spectrum">
+          <div class="spectrum-title">Tu posición en el espectro de liderazgo</div>
+          <div class="spectrum-bar-bg">
+            <div class="spectrum-fill" style="width:100%">
+              <div class="spectrum-marker" id="spectrum-marker" style="left:0%"></div>
+            </div>
+          </div>
+          <div class="spectrum-labels">
+            <span>Tradicional (15)</span>
+            <span>Transición (45)</span>
+            <span>Transformacional (75)</span>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="qr-section">
+          <div class="qr-title">📱 Comparte esta herramienta</div>
+          <div class="qr-subtitle">Escanea el QR para que tus colaboradores también completen el diagnóstico</div>
+          <div id="qrcode"></div>
+          <div class="qr-url" id="qr-url-text">Cargando URL...</div>
+          <button class="btn-copy" onclick="copyURL()">📋 Copiar enlace</button>
+          <button class="btn-restart" onclick="restartQuiz()">↩ Volver a intentar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script>
+const questions = [
+  {
+    section: "I. Decisiones bajo presión",
+    theory: "Seguridad psicológica · Edmondson",
+    text: "Horas antes de una presentación crítica ante la alta dirección, descubres que los datos tienen un error menor que no cambia las conclusiones pero sí afecta una métrica visible. Tu equipo propone ignorarlo. ¿Qué haces?",
+    options: [
+      { letter: "A", text: "Corriges el dato aunque implique trabajar toda la noche — la precisión no es negociable.", score: 2 },
+      { letter: "B", text: "Presentas con el dato original. El error es menor y no cambia la historia.", score: 1 },
+      { letter: "C", text: "Propones posponer la presentación para garantizar que todo sea impecable.", score: 3 },
+      { letter: "D", text: "Presentas los resultados pero mencionas proactivamente en la reunión la inconsistencia detectada y el plan de corrección. La transparencia construye más credibilidad que la perfección.", score: 5 },
+      { letter: "E", text: "Delegas la decisión final al analista responsable del dato — él conoce mejor el impacto.", score: 4 }
+    ]
+  },
+  {
+    section: "I. Decisiones bajo presión",
+    theory: "Liderazgo situacional · Hersey-Blanchard",
+    text: "Tu colaborador más estratégico pide trabajo 100% remoto permanente. Tu director de 58 años insiste en que la presencia genera cultura. Necesitas a ambos. Tienes 5 días para resolver. ¿Cuál es tu movimiento?",
+    options: [
+      { letter: "A", text: "Diseñas una propuesta de modelo híbrido con métricas de rendimiento claras y la presentas a tu director antes de responderle al colaborador.", score: 5 },
+      { letter: "B", text: "Apoyas al colaborador. El trabajo remoto está respaldado por la evidencia y el talento se retiene con flexibilidad.", score: 2 },
+      { letter: "C", text: "Sigues la directriz del director. La jerarquía define la cultura y cambiarla requiere mandato desde arriba.", score: 1 },
+      { letter: "D", text: "Permites informalmente el remoto mientras normalizas la discusión con tu director en paralelo.", score: 3 },
+      { letter: "E", text: "Realizas una encuesta anónima al equipo sobre preferencias de modalidad y presentas los datos a tu director como argumento.", score: 4 }
+    ]
+  },
+  {
+    section: "I. Decisiones bajo presión",
+    theory: "Teoría Y · McGregor + Bienestar organizacional",
+    text: "Tres semanas antes de un lanzamiento crítico, tu mejor analista presenta síntomas de agotamiento severo. Ha trabajado al 150% durante 8 meses y ahora pide dos semanas de licencia. El cronograma lo hace 'imposible'. ¿Qué haces?",
+    options: [
+      { letter: "A", text: "Apruebas la licencia y redistribuyes el trabajo. Un equipo agotado produce trabajo de mala calidad de todas formas.", score: 4 },
+      { letter: "B", text: "Le pides que aguante 3 semanas y le prometes vacaciones pagadas después del lanzamiento.", score: 1 },
+      { letter: "C", text: "Propones una semana ahora y otra después del lanzamiento como punto intermedio justo.", score: 2 },
+      { letter: "D", text: "Reorganizas el cronograma, apruebas la licencia y llevas a tu director un plan de ajuste realista con impactos y alternativas. No sacrificas a la persona ni al proyecto — rediseñas el sistema.", score: 5 },
+      { letter: "E", text: "Reduces su carga a tareas de menor intensidad durante las 3 semanas restantes.", score: 3 }
+    ]
+  },
+  {
+    section: "II. Poder e influencia",
+    theory: "Liderazgo transformacional · Burns",
+    text: "En una reunión con tu director, tu colaborador más junior hace una propuesta que contradice directamente el plan que tú ya presentaste. La propuesta es técnicamente superior. Tu director está en la sala. ¿Qué haces en ese momento?",
+    options: [
+      { letter: "A", text: "Defiendes tu plan. Cambiar de posición en reunión señala falta de preparación y debilita tu autoridad.", score: 1 },
+      { letter: "B", text: "Reconoces abiertamente el mérito de la propuesta y propones integrarla antes de ejecutar. El mejor resultado importa más que quién tuvo la idea.", score: 5 },
+      { letter: "C", text: "Después de la reunión incorporas la idea sin atribuírsela públicamente al colaborador para proteger la imagen de ambos.", score: 2 },
+      { letter: "D", text: "Le pides al colaborador que presente su propuesta en una sesión separada para evaluarla bien sin presión.", score: 3 },
+      { letter: "E", text: "Haces preguntas técnicas en la reunión para evaluar si la propuesta es sólida antes de comprometerte.", score: 4 }
+    ]
+  },
+  {
+    section: "II. Poder e influencia",
+    theory: "Liderazgo servidor · Greenleaf + Feedback 360°",
+    text: "6 meses después de implementar un sistema de gestión de desempeño que tú diseñaste, recibes retroalimentación anónima: el 70% del equipo lo percibe como micromanagement disfrazado de metodología moderna. ¿Cuál es tu primera reacción?",
+    options: [
+      { letter: "A", text: "Defiendes el sistema. El 70% de resistencia es estadísticamente normal en cualquier cambio organizacional.", score: 1 },
+      { letter: "B", text: "Suspendas el sistema mientras realizas un diagnóstico más profundo antes de actuar.", score: 3 },
+      { letter: "C", text: "Convocas al equipo, compartes los resultados del feedback abiertamente y preguntas: '¿Qué tendríamos que cambiar para que esto funcione?' Eres el primero en cuestionar lo que diseñaste.", score: 5 },
+      { letter: "D", text: "Ajustas los elementos más señalados sin anunciar el cambio. La gestión de percepción también es liderazgo.", score: 2 },
+      { letter: "E", text: "Invitas a los colaboradores más críticos a co-diseñar la versión mejorada del sistema.", score: 4 }
+    ]
+  },
+  {
+    section: "II. Poder e influencia",
+    theory: "Ética de stakeholders · Freeman",
+    text: "Tu director te pide reducir el presupuesto del área en 20% en 30 días. La opción más rápida es desvincular a 2 personas. Tienes otras posibilidades pero requieren más trabajo. ¿Qué haces primero?",
+    options: [
+      { letter: "A", text: "Identificas las 2 posiciones de menor impacto estratégico y procedes con el proceso de desvinculación.", score: 1 },
+      { letter: "B", text: "Solicitas una extensión del plazo antes de tomar cualquier decisión.", score: 2 },
+      { letter: "C", text: "Propones eliminar primero gastos no humanos y mides si alcanza el porcentaje requerido.", score: 3 },
+      { letter: "D", text: "Pides a tu equipo que proponga dónde recortar — ellos conocen mejor el detalle operativo.", score: 4 },
+      { letter: "E", text: "Preparas un análisis costo-beneficio completo: impacto de despidos vs. alternativas no humanas con proyecciones a 12 meses, y lo llevas a tu director como base de decisión compartida.", score: 5 }
+    ]
+  },
+  {
+    section: "III. Desarrollo de talento",
+    theory: "Liderazgo adaptativo · Heifetz + Mentoría inversa",
+    text: "Tienes un colaborador Gen Z de alto potencial que desafía constantemente tus decisiones en reuniones grupales — siempre con argumentos válidos pero sin respetar turnos ni jerarquías. ¿Cómo lo gestionas?",
+    options: [
+      { letter: "A", text: "Lo llamas a una reunión 1:1, reconoces explícitamente su capacidad analítica, y acuerdan juntos un protocolo de cómo puede canalizar ese pensamiento crítico con más impacto y menos fricción.", score: 5 },
+      { letter: "B", text: "Lo corriges en la próxima reunión donde ocurra. El respeto a los procesos se aprende en contexto.", score: 1 },
+      { letter: "C", text: "Le asignas un proyecto propio donde pueda tomar decisiones sin restricciones. Así canaliza su energía.", score: 4 },
+      { letter: "D", text: "Le pides a su par más senior que le hable de los códigos no escritos del equipo.", score: 2 },
+      { letter: "E", text: "Lo ignoras estratégicamente. Los colaboradores con ese perfil se moderan solos con el tiempo.", score: 3 }
+    ]
+  },
+  {
+    section: "III. Desarrollo de talento",
+    theory: "Teoría generacional · Strauss-Howe + Aprendizaje organizacional",
+    text: "Debes asignar un proyecto de transformación digital crítico. Tienes: un experto Baby Boomer con 30 años de contexto institucional pero resistente a lo digital, y una especialista Millennial con dominio técnico pero sin conocimiento del negocio. ¿Cómo lo asignas?",
+    options: [
+      { letter: "A", text: "Asignas al Boomer. El conocimiento del negocio es más difícil de reemplazar que la habilidad técnica.", score: 2 },
+      { letter: "B", text: "Asignas a la Millennial. Es un proyecto digital y requiere ese perfil de competencias.", score: 1 },
+      { letter: "C", text: "Divides el proyecto en fases: el Boomer lidera el diagnóstico, la Millennial la implementación.", score: 3 },
+      { letter: "D", text: "Los asignas como co-líderes con roles complementarios formalizados: el Boomer define el 'qué importa para el negocio', la Millennial define el 'cómo se ejecuta digitalmente'. La tensión generacional se convierte en fortaleza.", score: 5 },
+      { letter: "E", text: "Abres el proyecto a todo el equipo y dejas que formen sus propias duplas de trabajo.", score: 4 }
+    ]
+  },
+  {
+    section: "III. Desarrollo de talento",
+    theory: "Feedback continuo · Deloitte + Psicología del desempeño",
+    text: "Un colaborador de alto desempeño lleva 3 meses con caída sostenida en productividad y calidad. Cuando preguntas, dice 'todo bien'. La situación persiste otra semana. ¿Cuál es tu siguiente paso?",
+    options: [
+      { letter: "A", text: "Inicias un Plan de Mejora de Desempeño formal. La documentación protege a ambas partes.", score: 3 },
+      { letter: "B", text: "En una reunión 1:1 sin agenda preestablecida, le dices directamente: 'He notado un cambio real y no voy a pretender que no existe. No estoy aquí como tu juez — estoy aquí como tu líder. ¿Qué está pasando realmente?'", score: 5 },
+      { letter: "C", text: "Escalas a Recursos Humanos para que gestionen la situación con mayor objetividad.", score: 1 },
+      { letter: "D", text: "Le asignas un proyecto de alta visibilidad para probar si la falta de motivación era el problema.", score: 4 },
+      { letter: "E", text: "Reduces temporalmente su carga de trabajo y observas si la situación mejora sola.", score: 2 }
+    ]
+  },
+  {
+    section: "IV. Agilidad e innovación",
+    theory: "Gestión del cambio · Kotter + Innovación disruptiva · Christensen",
+    text: "Tu empresa implementará una herramienta de IA que automatizará el 30% de las tareas de tu equipo en 60 días. Tu Gen X resiste; tu Gen Z celebra. ¿Cuál es tu estrategia de implementación?",
+    options: [
+      { letter: "A", text: "Implementas según el cronograma corporativo. La resistencia es una fase normal del cambio y se supera.", score: 4 },
+      { letter: "B", text: "Solicitas una extensión de 90 días para garantizar que todos estén capacitados antes de implementar.", score: 1 },
+      { letter: "C", text: "Implementas primero con Gen Z para generar datos que convenzan a los colaboradores más resistentes.", score: 2 },
+      { letter: "D", text: "Dejas que cada persona decida si adoptar o no la herramienta durante los primeros 30 días.", score: 3 },
+      { letter: "E", text: "Formas equipos mixtos donde Gen Z lidera el 'cómo usar la herramienta' y Gen X define el 'qué valor de negocio debe generar'. La resistencia se convierte en diseño, no en obstáculo.", score: 5 }
+    ]
+  },
+  {
+    section: "IV. Agilidad e innovación",
+    theory: "Cultura organizacional · Schein + Seguridad psicológica",
+    text: "Tu equipo acaba de fallar un proyecto de alta visibilidad. El post-mortem revela que 3 personas vieron señales de alerta semanas antes pero no las comunicaron porque 'no era su lugar'. Presentas los hallazgos a la dirección la próxima semana. ¿Qué dices?",
+    options: [
+      { letter: "A", text: "Presentas los fallos técnicos y el plan de remediación. Es lo que la dirección necesita para tomar decisiones.", score: 1 },
+      { letter: "B", text: "Absorbes públicamente la responsabilidad de liderazgo para proteger al equipo de señalamientos.", score: 4 },
+      { letter: "C", text: "Presentas la causa raíz real: una cultura donde las personas no se sienten seguras de alzar la voz — y tu plan concreto para transformarla. Ese es el problema a resolver, no los fallos técnicos.", score: 5 },
+      { letter: "D", text: "Te enfocas en los aprendizajes sin señalar causas estructurales para mantener la moral del equipo alta.", score: 2 },
+      { letter: "E", text: "Distribuyes el análisis entre los líderes del equipo para que cada uno presente su parte.", score: 3 }
+    ]
+  },
+  {
+    section: "IV. Agilidad e innovación",
+    theory: "Gestión del conflicto · Thomas-Kilmann",
+    text: "Descubres que dos miembros clave llevan 3 meses en conflicto silencioso. Afecta la dinámica del equipo pero ninguno lo reconoce ante ti cuando preguntas directamente. ¿Qué haces?",
+    options: [
+      { letter: "A", text: "Los citas por separado, nombras lo que observas sin culpar a nadie, y luego facilitas una conversación estructurada entre los dos con reglas claras de escucha y acuerdos concretos.", score: 5 },
+      { letter: "B", text: "Los reúnes directamente y pones el tema sobre la mesa. Los adultos deben poder resolver sus propios conflictos.", score: 2 },
+      { letter: "C", text: "Separas sus proyectos para que no necesiten interactuar. La operación no puede sufrir por dinámicas personales.", score: 1 },
+      { letter: "D", text: "Le pides al miembro más respetado del equipo que actúe como mediador informal.", score: 4 },
+      { letter: "E", text: "Esperas. Los conflictos laborales entre adultos se resuelven solos con el tiempo y distancia.", score: 3 }
+    ]
+  },
+  {
+    section: "V. Resiliencia y legado",
+    theory: "Liderazgo transformacional + Gestión del desempeño",
+    text: "Tienes un colaborador brillante con resultados excepcionales, pero genera conflictos constantes: habla sobre sus colegas en reuniones y dos personas ya pidieron ser reasignadas por trabajar con él. ¿Qué haces?",
+    options: [
+      { letter: "A", text: "Proteges al colaborador. El talento técnico de este calibre es difícil de reemplazar y el mercado es competitivo.", score: 2 },
+      { letter: "B", text: "Das retroalimentación directa con casos específicos documentados: su comportamiento es parte de su evaluación de desempeño, y acuerdan juntos un plan de cambio con consecuencias claras y plazos definidos.", score: 5 },
+      { letter: "C", text: "Pides la perspectiva del equipo en una retrospectiva grupal sobre la dinámica del área.", score: 3 },
+      { letter: "D", text: "Lo reasignas a trabajo independiente donde no necesite colaborar con otros.", score: 1 },
+      { letter: "E", text: "Lo envías a un proceso de coaching ejecutivo y le das 90 días para demostrar un cambio observable.", score: 4 }
+    ]
+  },
+  {
+    section: "V. Resiliencia y legado",
+    theory: "Liderazgo situacional + Gestión del cambio · ADKAR",
+    text: "Asumes el liderazgo de un equipo que fue manejado de forma autocrática durante 5 años. Están desconectados y esperan que tú decidas todo. Tienes 90 días para mostrar resultados. ¿Por dónde empiezas?",
+    options: [
+      { letter: "A", text: "Estableces metas ambiciosas de inmediato. El equipo necesita ver que la dirección y las expectativas cambiaron.", score: 1 },
+      { letter: "B", text: "Tus primeros 30 días son solo de escucha: 1:1 con cada persona, sin tomar decisiones ni cambiar nada. Construyes confianza antes de construir agenda.", score: 5 },
+      { letter: "C", text: "Traes un coach organizacional para diagnosticar la cultura mientras tú te enfocas en entregar resultados rápidos.", score: 3 },
+      { letter: "D", text: "Anuncias 3 victorias rápidas que puedes entregar en 30 días para reconstruir la confianza con hechos concretos.", score: 4 },
+      { letter: "E", text: "Solicitas a tu director extender el plazo de 90 días dado el contexto que heredaste.", score: 2 }
+    ]
+  },
+  {
+    section: "V. Resiliencia y legado",
+    theory: "Legado de liderazgo · Kouzes & Posner + Desarrollo de líderes",
+    text: "Llevas 5 años como jefe de área con excelentes resultados. Al revisar tu equipo te das cuenta de que todos dependen de ti para cada decisión importante. Quieres cambiar esto antes de tu próxima promoción. ¿Cuál es tu plan?",
+    options: [
+      { letter: "A", text: "Empiezas a delegar más decisiones sin hacer ningún anuncio formal. El equipo aprenderá a través de la práctica y el ensayo-error.", score: 4 },
+      { letter: "B", text: "Identificas a tus 2 sucesores más preparados y los desarrollas para tu rol específico.", score: 2 },
+      { letter: "C", text: "Le reconoces abiertamente al equipo que has creado dependencia sin intención, y propones rediseñar juntos quién tiene autoridad para decidir qué en el área. La autonomía se diseña, no se declara.", score: 5 },
+      { letter: "D", text: "Solicitas un traslado lateral. Un nuevo equipo te da la oportunidad de liderar diferente desde el inicio.", score: 1 },
+      { letter: "E", text: "Contratas un consultor organizacional para rediseñar la estructura de tu equipo y los niveles de autoridad.", score: 3 }
+    ]
+  }
+];
+
+const profiles = [
+  {
+    num: "Perfil 1", min: 15, max: 24,
+    title: "El Regidor Autocrático",
+    range: "15 – 24 puntos",
+    desc: "Tu estilo se basa en la autoridad, el control y la jerarquía. Priorizas la eficiencia sobre la participación y el resultado sobre el proceso. Efectivo en entornos de alta presión o crisis inmediata, pero genera equipos dependientes con poca iniciativa y alta rotación generacional.",
+    traits: [
+      { icon: "🎯", title: "Fortaleza", text: "Decisiones rápidas y claras bajo presión extrema" },
+      { icon: "⚠️", title: "Riesgo principal", text: "Frena la innovación y genera dependencia sistémica" },
+      { icon: "🔑", title: "Siguiente paso", text: "Practica delegar el 'cómo', no solo el 'qué'" },
+      { icon: "📊", title: "Brecha clave", text: "Seguridad psicológica y feedback ascendente" }
+    ]
+  },
+  {
+    num: "Perfil 2", min: 25, max: 34,
+    title: "El Supervisor Transaccional",
+    range: "25 – 34 puntos",
+    desc: "Lideras con base en el intercambio: metas claras, recompensas por resultados, consecuencias por incumplimiento. Es un estilo predecible y estable que subestima la motivación intrínseca. Las generaciones más jóvenes raramente se comprometen profundamente bajo este modelo.",
+    traits: [
+      { icon: "✅", title: "Fortaleza", text: "Claridad de expectativas y consistencia" },
+      { icon: "⚠️", title: "Riesgo principal", text: "Bajo compromiso emocional del equipo" },
+      { icon: "🔑", title: "Siguiente paso", text: "Conecta el trabajo con propósito, no solo con metas" },
+      { icon: "📊", title: "Brecha clave", text: "Motivación intrínseca y desarrollo de talento" }
+    ]
+  },
+  {
+    num: "Perfil 3", min: 35, max: 42,
+    title: "El Adaptador a la Fuerza",
+    range: "35 – 42 puntos",
+    desc: "Reconoces la necesidad del cambio y haces ajustes, pero desde una postura reactiva más que estratégica. Combinas elementos tradicionales y modernos sin integración coherente, lo que genera mensajes mixtos. Estás en el umbral de una transformación real de liderazgo.",
+    traits: [
+      { icon: "🔄", title: "Fortaleza", text: "Flexibilidad y capacidad de ajuste táctico" },
+      { icon: "⚠️", title: "Riesgo principal", text: "Inconsistencia que genera confusión en el equipo" },
+      { icon: "🔑", title: "Siguiente paso", text: "Define una filosofía de liderazgo propia y coherente" },
+      { icon: "📊", title: "Brecha clave", text: "Consistencia y visión de largo plazo" }
+    ]
+  },
+  {
+    num: "Perfil 4", min: 43, max: 50,
+    title: "El Mentor de la Generación de Transición",
+    range: "43 – 50 puntos",
+    desc: "Tienes conciencia generacional y valoras la transferencia de conocimiento. Empiezas a ver el potencial de los equipos diversos y buscas crear puentes entre experiencia e innovación. Aún hay espacio para profundizar en la autonomía real y el liderazgo servicial.",
+    traits: [
+      { icon: "🌉", title: "Fortaleza", text: "Facilitas el puente entre experiencia e innovación" },
+      { icon: "⚠️", title: "Riesgo principal", text: "Mentoring sin suficiente autonomía real" },
+      { icon: "🔑", title: "Siguiente paso", text: "Cede el 'cómo' y confía más en tu equipo" },
+      { icon: "📊", title: "Brecha clave", text: "Autonomía y seguridad psicológica plena" }
+    ]
+  },
+  {
+    num: "Perfil 5", min: 51, max: 58,
+    title: "El Constructor de Puentes Empáticos",
+    range: "51 – 58 puntos",
+    desc: "Lideras con empatía genuina y alta conciencia de las necesidades individuales del equipo. Entiendes que las motivaciones no son universales y adaptas tu estilo. Eres un punto de equilibrio entre el liderazgo tradicional y el transformacional.",
+    traits: [
+      { icon: "❤️", title: "Fortaleza", text: "Alta inteligencia emocional y empatía activa" },
+      { icon: "⚠️", title: "Riesgo principal", text: "Puede priorizar armonía sobre conversaciones difíciles" },
+      { icon: "🔑", title: "Siguiente paso", text: "Aprende a dar retroalimentación difícil con compasión" },
+      { icon: "📊", title: "Brecha clave", text: "Liderazgo en conflicto y decisiones incómodas" }
+    ]
+  },
+  {
+    num: "Perfil 6", min: 59, max: 66,
+    title: "El Arquitecto del Propósito",
+    range: "59 – 66 puntos",
+    desc: "Conectas sistemáticamente el trabajo diario con un propósito mayor. Tu equipo entiende el 'por qué' antes del 'qué' y el 'cómo'. Tienes alta orientación hacia el desarrollo humano y la innovación colaborativa. Generas líderes, no seguidores.",
+    traits: [
+      { icon: "🏗️", title: "Fortaleza", text: "Construyes cultura con propósito explícito" },
+      { icon: "⚠️", title: "Riesgo principal", text: "Puede perder agilidad operativa por exceso de visión" },
+      { icon: "🔑", title: "Siguiente paso", text: "Equilibra pensamiento estratégico con ejecución táctica" },
+      { icon: "📊", title: "Brecha clave", text: "Velocidad de decisión bajo incertidumbre" }
+    ]
+  },
+  {
+    num: "Perfil 7", min: 67, max: 71,
+    title: "El Estratega Inclusivo",
+    range: "67 – 71 puntos",
+    desc: "Dominas el arte de integrar diversidad generacional, cognitiva y funcional en decisiones estratégicas. Tu equipo se siente genuinamente parte del rumbo organizacional. Practicas el liderazgo sistémico y entiendes que los problemas complejos requieren múltiples perspectivas.",
+    traits: [
+      { icon: "🌐", title: "Fortaleza", text: "Liderazgo sistémico e integración de diversidad" },
+      { icon: "⚠️", title: "Riesgo principal", text: "Los procesos inclusivos pueden ser lentos en crisis" },
+      { icon: "🔑", title: "Siguiente paso", text: "Desarrolla protocolos de decisión rápida para contextos caóticos" },
+      { icon: "📊", title: "Brecha clave", text: "Agilidad en escenarios de alta urgencia" }
+    ]
+  },
+  {
+    num: "Perfil 8", min: 72, max: 75,
+    title: "El Líder de la Transformación Continua",
+    range: "72 – 75 puntos",
+    desc: "Encarnas el modelo ideal para la era de la transformación: combinas visión estratégica, inteligencia emocional, conciencia generacional y vocación de desarrollo. No solo lideras el cambio — eres un ecosistema de cambio en sí mismo. Tu mayor reto ahora es replicarte.",
+    traits: [
+      { icon: "🚀", title: "Fortaleza", text: "Liderazgo transformacional auténtico y sostenible" },
+      { icon: "💡", title: "Distinción clave", text: "Generas líderes, no seguidores" },
+      { icon: "🔑", title: "Siguiente paso", text: "Codifica tu modelo y conviértete en mentor de otros líderes" },
+      { icon: "🌟", title: "Legado", text: "Cultura de aprendizaje continuo que trasciende tu gestión" }
+    ]
+  }
+];
+
+let currentQ = 0;
+let answers = new Array(15).fill(null);
+
+function buildDots() {
+  const row = document.getElementById('dots-row');
+  row.innerHTML = '';
+  for (let i = 0; i < 15; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' current' : '');
+    d.id = 'dot-' + i;
+    row.appendChild(d);
+  }
+}
+
+function updateDots() {
+  for (let i = 0; i < 15; i++) {
+    const d = document.getElementById('dot-' + i);
+    d.className = 'dot';
+    if (answers[i] !== null) d.classList.add('answered');
+    if (i === currentQ) d.classList.add('current');
+  }
+}
+
+function startQuiz() {
+  document.getElementById('screen-intro').classList.remove('active');
+  document.getElementById('screen-quiz').classList.add('active');
+  buildDots();
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = questions[currentQ];
+  document.getElementById('q-section').textContent = q.section;
+  document.getElementById('q-theory').textContent = q.theory;
+  document.getElementById('q-text').textContent = q.text;
+  const ol = document.getElementById('options-list');
+  ol.innerHTML = '';
+  q.options.forEach((opt, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn' + (answers[currentQ] === idx ? ' selected' : '');
+    btn.innerHTML = `<span class="option-letter">${opt.letter}</span><span>${opt.text}</span>`;
+    btn.onclick = () => selectOption(idx);
+    ol.appendChild(btn);
+  });
+  const total = questions.length;
+  document.getElementById('progress-counter').textContent = `${currentQ + 1} / ${total}`;
+  document.getElementById('progress-bar').style.width = `${((currentQ + 1) / total) * 100}%`;
+  document.getElementById('btn-prev').style.visibility = currentQ === 0 ? 'hidden' : 'visible';
+  const nextBtn = document.getElementById('btn-next');
+  nextBtn.disabled = answers[currentQ] === null;
+  nextBtn.textContent = currentQ === 14 ? 'Ver mi resultado →' : 'Siguiente →';
+  updateDots();
+}
+
+function selectOption(idx) {
+  answers[currentQ] = idx;
+  document.querySelectorAll('.option-btn').forEach((b, i) => {
+    b.classList.toggle('selected', i === idx);
+  });
+  document.getElementById('btn-next').disabled = false;
+}
+
+function nextQuestion() {
+  if (answers[currentQ] === null) return;
+  if (currentQ < 14) { currentQ++; renderQuestion(); }
+  else { showResults(); }
+}
+
+function prevQuestion() {
+  if (currentQ > 0) { currentQ--; renderQuestion(); }
+}
+
+function calcScore() {
+  let total = 0;
+  answers.forEach((ans, qi) => {
+    if (ans !== null) total += questions[qi].options[ans].score;
+  });
+  return total;
+}
+
+function getProfile(score) {
+  return profiles.find(p => score >= p.min && score <= p.max) || profiles[0];
+}
+
+function showResults() {
+  const score = calcScore();
+  const profile = getProfile(score);
+  document.getElementById('screen-quiz').classList.remove('active');
+  document.getElementById('screen-result').classList.add('active');
+  document.getElementById('res-score').textContent = score;
+  document.getElementById('res-profile-num').textContent = profile.num;
+  document.getElementById('res-title').textContent = profile.title;
+  document.getElementById('res-range').textContent = 'Rango: ' + profile.range;
+  document.getElementById('res-desc').textContent = profile.desc;
+  const traitsEl = document.getElementById('res-traits');
+  traitsEl.innerHTML = profile.traits.map(t =>
+    `<div class="trait-item"><div class="trait-icon">${t.icon}</div><div class="trait-title">${t.title}</div><div class="trait-text">${t.text}</div></div>`
+  ).join('');
+  const pct = ((score - 15) / (75 - 15)) * 100;
+  setTimeout(() => { document.getElementById('spectrum-marker').style.left = pct + '%'; }, 300);
+  const url = window.location.href.split('?')[0];
+  document.getElementById('qr-url-text').textContent = url;
+  document.getElementById('qrcode').innerHTML = '';
+  new QRCode(document.getElementById('qrcode'), {
+    text: url, width: 160, height: 160,
+    colorDark: '#0D1B2A', colorLight: '#FFFFFF',
+    correctLevel: QRCode.CorrectLevel.M
+  });
+}
+
+function copyURL() {
+  const url = window.location.href.split('?')[0];
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.querySelector('.btn-copy');
+    btn.textContent = '✅ ¡Copiado!';
+    setTimeout(() => btn.textContent = '📋 Copiar enlace', 2000);
+  });
+}
+
+function restartQuiz() {
+  currentQ = 0;
+  answers = new Array(15).fill(null);
+  document.getElementById('screen-result').classList.remove('active');
+  document.getElementById('screen-intro').classList.add('active');
+}
+</script>
+</body>
+</html>

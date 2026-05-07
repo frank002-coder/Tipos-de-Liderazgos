@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cuestionario de Estilos de Liderazgo - Jefes de Área</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .question-section {
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        .question-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .question-number {
+            color: #667eea;
+            font-weight: bold;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .question-text {
+            font-size: 1.2em;
+            color: #333;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .option input[type="radio"] {
+            display: none;
+        }
+
+        .option-label {
+            display: block;
+            padding: 15px 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1em;
+            color: #333;
+        }
+
+        .option input[type="radio"]:checked + .option-label {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .option-label:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .option input[type="radio"]:checked + .option-label:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            gap: 15px;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 1em;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-prev {
+            background: #e0e0e0;
+            color: #333;
+            flex: 1;
+        }
+
+        .btn-prev:hover {
+            background: #d0d0d0;
+        }
+
+        .btn-next {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-next:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-next:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-bar {
+            background: #e0e0e0;
+            height: 6px;
+            border-radius: 3px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            color: #667eea;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        /* Resultados */
+        .results-section {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .results-section.active {
+            display: block;
+        }
+
+        .result-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .result-header h2 {
+            font-size: 2.2em;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .main-result {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+        }
+
+        .main-result h3 {
+            font-size: 2em;
+            margin-bottom: 15px;
+        }
+
+        .main-result p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .secondary-results {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .secondary-result {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .secondary-result h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .secondary-result p {
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .description-box {
+            background: #f0f4ff;
+            padding: 30px;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+            margin-bottom: 30px;
+            line-height: 1.7;
+            color: #333;
+        }
+
+        .description-box h4 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .characteristics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .char-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .char-item strong {
+            color: #667eea;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .char-item span {
+            color: #666;
+            font-size: 0.95em;
+        }
+
+        .scores {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .scores h4 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+        }
+
+        .score-item {
+            margin-bottom: 15px;
+        }
+
+        .score-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .score-bar {
+            background: #e0e0e0;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .score-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.5s ease;
+        }
+
+        .btn-restart {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            margin: 30px auto;
+            display: block;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .btn-restart:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .recommendations {
+            background: #fffbf0;
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 5px solid #ff9800;
+            margin-bottom: 30px;
+        }
+
+        .recommendations h4 {
+            color: #ff9800;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .recommendations ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .recommendations li {
+            padding: 8px 0;
+            color: #333;
+            border-bottom: 1px solid #ffe0b2;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .recommendations li:last-child {
+            border-bottom: none;
+        }
+
+        .recommendations li:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #ff9800;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .question-text {
+                font-size: 1.1em;
+            }
+
+            .secondary-results {
+                grid-template-columns: 1fr;
+            }
+
+            .characteristics {
+                grid-template-columns: 1fr;
+            }
+
+            .navigation {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Cuestionario de Estilos de Liderazgo</h1>
+            <p>Para Jefes de Área - Descubre tu enfoque de liderazgo</p>
+        </div>
+
+        <div class="content">
+            <!-- Sección de Preguntas -->
+            <div id="questionnaire-container">
+                <div class="progress-text">
+                    <span id="current-question">1</span> de <span id="total-questions">20</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+
+                <div id="questions-wrapper"></div>
+
+                <div class="navigation">
+                    <button class="btn-prev" id="btn-prev" onclick="previousQuestion()" style="display: none;">← Anterior</button>
+                    <button class="btn-next" id="btn-next" onclick="nextQuestion()">Siguiente →</button>
+                </div>
+            </div>
+
+            <!-- Sección de Resultados -->
+            <div id="results-container" class="results-section">
+                <div class="result-header">
+                    <h2>📊 Tus Resultados</h2>
+                </div>
+
+                <div class="main-result">
+                    <h3 id="main-result-title">Estilo de Liderazgo</h3>
+                    <p id="main-result-subtitle">Tu enfoque principal como líder</p>
+                </div>
+
+                <div class="secondary-results" id="secondary-results"></div>
+
+                <div class="description-box">
+                    <h4 id="desc-title">Descripción de tu Perfil</h4>
+                    <p id="desc-text"></p>
+                </div>
+
+                <div class="characteristics" id="characteristics-container"></div>
+
+                <div class="recommendations">
+                    <h4>📌 Recomendaciones para tu Desarrollo</h4>
+                    <ul id="recommendations-list"></ul>
+                </div>
+
+                <div class="scores">
+                    <h4>📈 Puntuaciones Detalladas</h4>
+                    <div id="scores-container"></div>
+                </div>
+
+                <button class="btn-restart" onclick="restartQuiz()">Repetir Cuestionario</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Preguntas mejoradas y pensativas
+        const questions = [
+            {
+                question: "Cuando tu equipo enfrenta un problema complejo sin solución clara, ¿cuál es tu primer instinto?",
+                answers: [
+                    { text: "Reúno al equipo para explorar juntos todas las perspectivas antes de decidir", scores: { transformacional: 3, democrático: 3, colaborativo: 2 } },
+                    { text: "Analizo la situación en profundidad y presento una solución bien fundamentada", scores: { directivo: 3, analítico: 3, visión: 1 } },
+                    { text: "Dejo que el equipo proponga soluciones y elijo la mejor opción", scores: { democrático: 3, delegativo: 2, colaborativo: 1 } },
+                    { text: "Establezco la dirección clara pero dejo libertad en la ejecución", scores: { transformacional: 2, visión: 3, colaborativo: 1 } }
+                ]
+            },
+            {
+                question: "Un miembro talentoso de tu equipo propone una idea innovadora que desafía los procesos actuales. ¿Cómo reaccionas?",
+                answers: [
+                    { text: "Lo analizo críticamente antes de adoptar; debo evaluar viabilidad y riesgos", scores: { analítico: 3, directivo: 2, cauto: 2 } },
+                    { text: "Entusiasta, lo apoyo y ayudo a implementarlo; la innovación es clave", scores: { transformacional: 3, visión: 3, colaborativo: 1 } },
+                    { text: "Le pido que lo desarrolle y presente ante el equipo para discusión conjunta", scores: { democrático: 3, colaborativo: 2, delegativo: 1 } },
+                    { text: "Valido la idea pero considerando cómo se integra con metas organizacionales", scores: { estratégico: 3, visión: 2, analítico: 1 } }
+                ]
+            },
+            {
+                question: "Tu jefe presiona por resultados mientras tu equipo está al máximo de su capacidad. ¿Cuál es tu enfoque?",
+                answers: [
+                    { text: "Negoció con la jefatura basándome en datos para ajustar expectativas realistas", scores: { estratégico: 3, negociador: 2, protector: 2 } },
+                    { text: "Motivo al equipo explicando la importancia y cómo juntos podemos lograrlo", scores: { transformacional: 3, inspirador: 3, visión: 1 } },
+                    { text: "Distribuyo la carga equitativamente y monitoreo progreso constantemente", scores: { directivo: 3, analítico: 2, cauto: 1 } },
+                    { text: "Pregunto al equipo cómo podemos organizarnos mejor para lograr los resultados", scores: { democrático: 3, colaborativo: 2, delegativo: 1 } }
+                ]
+            },
+            {
+                question: "Notas que dos miembros de tu equipo tienen conflicto que afecta la dinámica. ¿Qué haces?",
+                answers: [
+                    { text: "Me reúno con cada uno privadamente para entender raíces del problema", scores: { empático: 3, mediador: 3, protector: 1 } },
+                    { text: "Reúno a ambos, medío y busco solución que sea justa para los dos", scores: { democrático: 2, mediador: 3, empático: 1 } },
+                    { text: "Establezco expectativas claras sobre comportamiento profesional y monitoreo", scores: { directivo: 3, cauto: 2, analítico: 1 } },
+                    { text: "Veo esto como oportunidad para fortalecer la empatía y cohesión del equipo", scores: { transformacional: 2, empático: 2, mediador: 2 } }
+                ]
+            },
+            {
+                question: "A nivel estratégico, ¿cómo visualizas tu rol en la organización?",
+                answers: [
+                    { text: "Ejecutor eficiente de las estrategias establecidas por niveles superiores", scores: { directivo: 3, operativo: 3, cauto: 1 } },
+                    { text: "Catalizador que alinea la visión organizacional con las capacidades del equipo", scores: { transformacional: 3, estratégico: 2, visión: 2 } },
+                    { text: "Facilitador que potencia el talento del equipo para que emerja lo mejor de cada uno", scores: { delegativo: 3, colaborativo: 2, empático: 1 } },
+                    { text: "Pensador estratégico que define dirección con base en análisis de mercado y capacidades", scores: { analítico: 3, estratégico: 3, visión: 1 } }
+                ]
+            },
+            {
+                question: "Un proyecto importante fracasó. ¿Cuál es tu respuesta?",
+                answers: [
+                    { text: "Analizo qué salió mal, qué aprendemos y cómo mejoramos procesos", scores: { analítico: 3, aprendedor: 3, cauto: 1 } },
+                    { text: "Responsabilizo a quien corresponde y ajusto procesos para evitar repetición", scores: { directivo: 3, cauto: 2, operativo: 1 } },
+                    { text: "Lo veo como experiencia de aprendizaje para fortalecer al equipo", scores: { transformacional: 2, empático: 2, aprendedor: 2 } },
+                    { text: "Involucro al equipo en análisis para que todos aprendan juntos de la experiencia", scores: { democrático: 3, colaborativo: 2, aprendedor: 1 } }
+                ]
+            },
+            {
+                question: "¿Cuánto espacio das a tu equipo para tomar decisiones sin tu aprobación?",
+                answers: [
+                    { text: "Poco; prefiero revisar decisiones para asegurar alineación y consistencia", scores: { directivo: 3, cauto: 2, analítico: 1 } },
+                    { text: "Considerable; establezco límites claros pero confío en su criterio", scores: { delegativo: 3, estratégico: 1, confianza: 3 } },
+                    { text: "Mucho; mi trabajo es potenciar su capacidad de decisión", scores: { delegativo: 3, empático: 2, confianza: 2 } },
+                    { text: "Variable según la importancia de la decisión y madurez del equipo", scores: { estratégico: 3, analítico: 2, confianza: 1 } }
+                ]
+            },
+            {
+                question: "Tu equipo tiene personas muy jóvenes (entrada a carrera) y muy experimentadas (próximas a jubilación). ¿Tu enfoque?",
+                answers: [
+                    { text: "Estructuro programas de mentoría para transferencia de conocimiento", scores: { transformacional: 3, empático: 2, aprendedor: 2 } },
+                    { text: "Asigno roles según experiencia y facilito crecimiento de jóvenes talentos", scores: { estratégico: 3, delegativo: 2, visión: 1 } },
+                    { text: "Establezco estándares claros de desempeño y monitoreo para todos", scores: { directivo: 3, operativo: 2, cauto: 1 } },
+                    { text: "Busco que el equipo mismo organice la colaboración intergeneracional", scores: { democrático: 3, colaborativo: 2, delegativo: 1 } }
+                ]
+            },
+            {
+                question: "Cuando las cosas van bien, ¿cómo reconoces y celebras los logros?",
+                answers: [
+                    { text: "Reconocimiento inmediato, específico y visible; celebro como equipo", scores: { transformacional: 3, inspirador: 3, empático: 1 } },
+                    { text: "Reconozco logros en conversaciones privadas, reforzando comportamientos clave", scores: { empático: 3, protector: 2, directivo: 1 } },
+                    { text: "Hago público el reconocimiento para que inspire a otros", scores: { inspirador: 3, transformacional: 2, visión: 1 } },
+                    { text: "Vinculo logros a beneficios/oportunidades de carrera para motivar futuro", scores: { estratégico: 3, analítico: 2, directivo: 1 } }
+                ]
+            },
+            {
+                question: "Un cambio organizacional importante viene de arriba. ¿Tu primer paso?",
+                answers: [
+                    { text: "Lo analizo para entender impacto y comunico con claridad a mi equipo", scores: { analítico: 3, comunicador: 2, cauto: 2 } },
+                    { text: "Entiendo la visión detrás del cambio y la presento de manera inspiradora", scores: { transformacional: 3, inspirador: 3, visión: 1 } },
+                    { text: "Involucro al equipo para entender preocupaciones y co-diseñar implementación", scores: { democrático: 3, colaborativo: 2, comunicador: 1 } },
+                    { text: "Establezco plan de implementación claro con roles, timing y métricas", scores: { directivo: 3, operativo: 3, estratégico: 1 } }
+                ]
+            },
+            {
+                question: "¿Cómo ves el balance entre cumplimiento de objetivos y bienestar del equipo?",
+                answers: [
+                    { text: "Son inseparables; un equipo con bienestar logra objetivos sosteniblemente", scores: { transformacional: 3, empático: 3, balanceado: 2 } },
+                    { text: "Prioridad primaria son objetivos; bienestar es consecuencia de logros", scores: { directivo: 3, operativo: 2, cauto: 1 } },
+                    { text: "Busco equilibrio constante; ambos son igualmente importantes", scores: { estratégico: 3, balanceado: 3, colaborativo: 1 } },
+                    { text: "Creo que el equipo sabe qué necesita; facilito ambas cosas", scores: { democrático: 3, delegativo: 2, empático: 1 } }
+                ]
+            },
+            {
+                question: "Un cliente importante hizo queja sobre tu área. ¿Tu reacción?",
+                answers: [
+                    { text: "Investigo a fondo la raíz del problema y presento plan de corrección", scores: { analítico: 3, estratégico: 2, cauto: 2 } },
+                    { text: "Tomo responsabilidad inmediatamente y corrijo con el equipo", scores: { directivo: 3, protector: 2, operativo: 1 } },
+                    { text: "Lo veo como oportunidad para mejorar y fortalecer procesos con el equipo", scores: { transformacional: 2, aprendedor: 3, colaborativo: 1 } },
+                    { text: "Reúno al equipo para entender qué pasó y definir juntos la solución", scores: { democrático: 3, colaborativo: 2, empático: 1 } }
+                ]
+            },
+            {
+                question: "¿Cuál es tu relación típica con el riesgo?",
+                answers: [
+                    { text: "Evito riesgos; prefiero caminos probados y seguros", scores: { cauto: 3, analítico: 2, directivo: 1 } },
+                    { text: "Los evalúo cuidadosamente; asumo riesgos calculados", scores: { analítico: 3, estratégico: 2, balanceado: 1 } },
+                    { text: "Veo riesgos como oportunidades; el crecimiento requiere cierta audacia", scores: { transformacional: 3, visión: 3, innovador: 1 } },
+                    { text: "Dejo que el equipo evalúe y decida; soporto decisiones bien pensadas", scores: { delegativo: 3, confianza: 2, colaborativo: 1 } }
+                ]
+            },
+            {
+                question: "Un miembro del equipo tiene problemas personales que afecta su desempeño. ¿Qué haces?",
+                answers: [
+                    { text: "Lo hablo confidencialmente; entiendo el problema y busco apoyo disponible", scores: { empático: 3, protector: 3, humano: 2 } },
+                    { text: "Establezco con claridad expectativas de desempeño y opciones de apoyo", scores: { directivo: 2, cauto: 2, empático: 2 } },
+                    { text: "Conecto la persona con recursos (RRHH, servicios de salud) y muestro paciencia", scores: { protector: 3, empático: 2, humano: 2 } },
+                    { text: "Facilito que el equipo apoye al compañero mientras se resuelve la situación", scores: { colaborativo: 3, democrático: 2, empático: 1 } }
+                ]
+            },
+            {
+                question: "¿Qué tipo de feedback buscas sobre tu liderazgo?",
+                answers: [
+                    { text: "Feedback directo y honesto; quiero saber exactamente dónde mejorar", scores: { aprendedor: 3, transformacional: 2, comunicador: 1 } },
+                    { text: "Metrics de desempeño del equipo; esos son mis mejores indicadores", scores: { analítico: 3, operativo: 2, directivo: 1 } },
+                    { text: "Observaciones sobre el clima, motivación y cohesión del equipo", scores: { empático: 3, transformacional: 2, humano: 2 } },
+                    { text: "Reflexiono con el equipo; sus percepciones son clave en mi desarrollo", scores: { democrático: 3, aprendedor: 2, colaborativo: 1 } }
+                ]
+            },
+            {
+                question: "La organización necesita un cambio cultural. ¿Tu enfoque?",
+                answers: [
+                    { text: "Modelo el cambio, inspiro al equipo a vivirlo y celebro pequeños avances", scores: { transformacional: 3, inspirador: 3, visión: 1 } },
+                    { text: "Establezco nuevas normas y políticas; los comportamientos seguirán", scores: { directivo: 3, operativo: 2, cauto: 1 } },
+                    { text: "Facilito conversaciones para que el equipo entienda por qué y cómo", scores: { democrático: 3, comunicador: 2, colaborativo: 1 } },
+                    { text: "Analizo la brecha actual vs. deseada y diseño intervenciones estratégicas", scores: { estratégico: 3, analítico: 3, visión: 1 } }
+                ]
+            },
+            {
+                question: "¿Cómo describes tu disponibilidad y accesibilidad para el equipo?",
+                answers: [
+                    { text: "Muy accesible; quiero que me busquen cuando me necesiten", scores: { empático: 3, protector: 2, humano: 2 } },
+                    { text: "Disponible, pero dentro de límites claros de tiempo y proceso", scores: { estratégico: 3, directivo: 2, operativo: 1 } },
+                    { text: "Accesible, pero enfatizo que el equipo resuelva primero antes de recurrir a mí", scores: { delegativo: 3, confianza: 3, aprendedor: 1 } },
+                    { text: "Mi agenda es flexible según necesidades del equipo y negocio", scores: { balanceado: 3, colaborativo: 2, estratégico: 1 } }
+                ]
+            },
+            {
+                question: "En conflictos entre objetivos de tu área vs. otras áreas, ¿cuál es tu postura?",
+                answers: [
+                    { text: "Defiendo el interés de mi área de manera firme pero colaborativa", scores: { negociador: 3, estratégico: 2, protector: 1 } },
+                    { text: "Busco entender la perspectiva de otros y encontrar soluciones ganar-ganar", scores: { democrático: 3, mediador: 3, colaborativo: 1 } },
+                    { text: "Priorizo el bien general de la organización sobre mi área", scores: { estratégico: 3, visión: 2, transformacional: 1 } },
+                    { text: "Presento datos que demuestren por qué mi área debe priorizar", scores: { analítico: 3, cauto: 2, directivo: 1 } }
+                ]
+            },
+            {
+                question: "¿Cómo definiría tu éxito como líder?",
+                answers: [
+                    { text: "Que mi equipo logre resultados exceptionales de forma consistente", scores: { directivo: 3, operativo: 3, cauto: 1 } },
+                    { text: "Que mi equipo desarrolle líderes que puedan reemplazarme o ir más lejos", scores: { transformacional: 3, visión: 3, aprendedor: 1 } },
+                    { text: "Que mi equipo se sienta comprometido, apreciado y en crecimiento", scores: { empático: 3, transformacional: 2, humano: 2 } },
+                    { text: "Que el equipo ejecute estrategia con autonomía y criterio propio", scores: { delegativo: 3, estratégico: 2, confianza: 1 } }
+                ]
+            }
+        ];
+
+        // Perfiles de liderazgo mejorados
+        const leadershipProfiles = {
+            transformacional: {
+                name: "Líder Transformacional",
+                color: "#667eea",
+                description: "Eres un líder visionario que inspira cambio y desarrollo personal en tu equipo. Tu enfoque se centra en elevar el potencial de las personas, articular una visión clara y motivar a través del ejemplo. Ves cada desafío como oportunidad de crecimiento y tienes la capacidad de inspirar a otros para alcanzar más allá de sus expectativas iniciales.",
+                strengths: [
+                    { label: "Visión Clara", value: "Articulas dirección inspiradora para el equipo" },
+                    { label: "Inspiración", value: "Motivas a otros a superar sus límites" },
+                    { label: "Desarrollo Humano", value: "Inviertes en crecimiento de tu gente" },
+                    { label: "Agilidad Adaptativa", value: "Te adaptas bien a cambios y los impulsa" }
+                ],
+                recommendations: [
+                    "Equilibra visión inspiradora con métricas concretas de progreso",
+                    "Trabaja en comunicar el 'cómo' además del 'qué' y el 'por qué'",
+                    "Delega más en equipos maduras para no crear dependencia",
+                    "Mantén contacto regular con realidades operativas del día a día"
+                ]
+            },
+            directivo: {
+                name: "Líder Directivo",
+                color: "#ff6b6b",
+                description: "Eres un líder orientado a resultados que valora la claridad, eficiencia y ejecución. Tu enfoque es establecer expectativas claras, monitorear progreso y asegurar que los objetivos se cumplan. Eres decidido, estructurado y aseguras que los procesos funcionen como deben.",
+                strengths: [
+                    { label: "Orientación a Resultados", value: "Enfoque claro en objetivos y cumplimiento" },
+                    { label: "Claridad", value: "Comunicas expectativas con precisión" },
+                    { label: "Eficiencia Operativa", value: "Optimizas procesos y recursos" },
+                    { label: "Responsabilidad", value: "Asumes y demandas accountability" }
+                ],
+                recommendations: [
+                    "Incrementa escucha activa; no todo está en las métricas",
+                    "Crea espacios para que el equipo proponga mejoras a procesos",
+                    "Trabaja en reconocimiento más frecuente de logros",
+                    "Explora el 'por qué' detrás de los objetivos, no solo el 'qué'"
+                ]
+            },
+            democrático: {
+                name: "Líder Democrático/Colaborativo",
+                color: "#51cf66",
+                description: "Eres un líder que valora la participación, la inclusión y la construcción conjunta. Tu fortaleza está en facilitar que el equipo se sienta escuchado, contribuya a decisiones y se apropie de resultados. Crees que la mejor solución emerge de la diversidad de perspectivas.",
+                strengths: [
+                    { label: "Inclusión", value: "Todos se sienten parte de las decisiones" },
+                    { label: "Apropiación Compartida", value: "El equipo se compromete con resultados propios" },
+                    { label: "Diversidad de Ideas", value: "Aprovechas perspectivas distintas" },
+                    { label: "Cohesión Grupal", value: "Fortaleces vínculos y confianza en equipo" }
+                ],
+                recommendations: [
+                    "Define límites claros de participación; hay decisiones que deben ser rápidas",
+                    "Asegura que participación no diluya accountability individual",
+                    "Comunica decisiones finales con claridad, aunque no haya consenso",
+                    "Trabaja en tomar decisiones difíciles cuando el equipo está dividido"
+                ]
+            },
+            delegativo: {
+                name: "Líder Delegativo/Habilitador",
+                color: "#ffd43b",
+                description: "Eres un líder que confía en la capacidad de tu equipo y les da autonomía para ejecutar. Tu fortaleza está en potenciar el desarrollo de tus colaboradores, removiendo obstáculos y dejando que tomen decisiones. Crees que el crecimiento viene del reto y la responsabilidad.",
+                strengths: [
+                    { label: "Confianza", value: "Delegas con convicción en capacidades" },
+                    { label: "Autonomía", value: "Das libertad para que decidan cómo actuar" },
+                    { label: "Desarrollo de Talento", value: "Tu gente crece más rápido que el promedio" },
+                    { label: "Escalabilidad", value: "Tu modelo permite crecer sin multiplicar tu carga" }
+                ],
+                recommendations: [
+                    "Asegura que el equipo entienda límites y restricciones reales",
+                    "Proporciona claridad en el 'por qué' de las decisiones delegadas",
+                    "Mantén visibilidad sobre riesgos sin micromanagear",
+                    "Revisa ocasionalmente para asegurar que todos están siendo servidos bien"
+                ]
+            },
+            analítico: {
+                name: "Líder Analítico/Estratégico",
+                color: "#4c6ef5",
+                description: "Eres un líder que basa sus decisiones en datos, análisis profundo y pensamiento estratégico. Tu fortaleza está en entender la complejidad, ver patrones y diseñar soluciones bien fundamentadas. Eres cauteloso pero decisivo cuando los datos lo sustentan.",
+                strengths: [
+                    { label: "Análisis Profundo", value: "No aceptas soluciones superficiales" },
+                    { label: "Visión Estratégica", value: "Ves conexiones entre partes del negocio" },
+                    { label: "Gestión de Riesgo", value: "Anticipas problemas potenciales" },
+                    { label: "Toma de Decisión Fundamentada", value: "Tus decisiones se sostienen en el tiempo" }
+                ],
+                recommendations: [
+                    "Acelera tiempo de análisis; a veces 70% de info es suficiente",
+                    "Comunica la lógica detrás de decisiones para que el equipo entienda",
+                    "Valida supuestos con el equipo; tu percepción puede no ser completa",
+                    "Permite que otros experimenten aprendiendo, no solo analizando"
+                ]
+            },
+            empático: {
+                name: "Líder Empático/Humano",
+                color: "#ff922b",
+                description: "Eres un líder centrado en las personas, que valora entender sus necesidades, preocupaciones y potencial. Tu fortaleza está en crear ambientes seguros, en ser accesible y en genuinamente importarte el bienestar de tu equipo. Ves al ser humano detrás del rol.",
+                strengths: [
+                    { label: "Escucha Activa", value: "Entiendes lo que realmente dicen" },
+                    { label: "Soporte Emocional", value: "Tu equipo se siente cuidado" },
+                    { label: "Retención de Talento", value: "La gente quiere trabajar contigo" },
+                    { label: "Resolución de Conflictos", value: "Buscas soluciones que honren a todos" }
+                ],
+                recommendations: [
+                    "Establece límites más claros; no puedes cargar con problemas personales de todos",
+                    "Trabaja en dar feedback difícil con firmeza cuando sea necesario",
+                    "Asegura que empatía no se traduzca en falta de accountability",
+                    "Desarrolla separación saludable entre rol profesional y relaciones personales"
+                ]
+            }
+        };
+
+        // Variables globales
+        let currentQuestion = 0;
+        const answers = {};
+        let scores = {
+            transformacional: 0,
+            directivo: 0,
+            democrático: 0,
+            delegativo: 0,
+            analítico: 0,
+            empático: 0
+        };
+
+        // Inicializar
+        function init() {
+            renderQuestions();
+            document.getElementById("total-questions").textContent = questions.length;
+        }
+
+        function renderQuestions() {
+            const wrapper = document.getElementById("questions-wrapper");
+            wrapper.innerHTML = "";
+
+            questions.forEach((q, index) => {
+                const section = document.createElement("div");
+                section.className = "question-section" + (index === 0 ? " active" : "");
+                section.id = "question-" + index;
+
+                let optionsHTML = '<div class="options">';
+                q.answers.forEach((answer, answerIndex) => {
+                    optionsHTML += `
+                        <label class="option">
+                            <input type="radio" name="question-${index}" value="${answerIndex}" 
+                                onchange="recordAnswer(${index}, ${answerIndex})">
+                            <label class="option-label">${answer.text}</label>
+                        </label>
+                    `;
+                });
+                optionsHTML += '</div>';
+
+                section.innerHTML = `
+                    <div class="question-number">Pregunta ${index + 1}</div>
+                    <div class="question-text">${q.question}</div>
+                    ${optionsHTML}
+                `;
+
+                wrapper.appendChild(section);
+            });
+        }
+
+        function recordAnswer(questionIndex, answerIndex) {
+            answers[questionIndex] = answerIndex;
+            const answerScores = questions[questionIndex].answers[answerIndex].scores;
+
+            for (const [key, value] of Object.entries(answerScores)) {
+                scores[key] += value;
+            }
+
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const progress = (Object.keys(answers).length / questions.length) * 100;
+            document.getElementById("progress-fill").style.width = progress + "%";
+            document.getElementById("current-question").textContent = Object.keys(answers).length;
+        }
+
+        function nextQuestion() {
+            if (currentQuestion < questions.length - 1) {
+                document.getElementById("question-" + currentQuestion).classList.remove("active");
+                currentQuestion++;
+                document.getElementById("question-" + currentQuestion).classList.add("active");
+
+                document.getElementById("btn-prev").style.display = "block";
+                if (currentQuestion === questions.length - 1) {
+                    document.getElementById("btn-next").textContent = "Ver Resultados →";
+                }
+            } else if (currentQuestion === questions.length - 1 && Object.keys(answers).length === questions.length) {
+                showResults();
+            }
+        }
+
+        function previousQuestion() {
+            if (currentQuestion > 0) {
+                document.getElementById("question-" + currentQuestion).classList.remove("active");
+                currentQuestion--;
+                document.getElementById("question-" + currentQuestion).classList.add("active");
+
+                if (currentQuestion === 0) {
+                    document.getElementById("btn-prev").style.display = "none";
+                }
+                if (currentQuestion < questions.length - 1) {
+                    document.getElementById("btn-next").textContent = "Siguiente →";
+                }
+            }
+        }
+
+        function showResults() {
+            // Encontrar el perfil principal
+            let maxScore = 0;
+            let mainProfile = "";
+
+            for (const [profile, score] of Object.entries(scores)) {
+                if (score > maxScore) {
+                    maxScore = score;
+                    mainProfile = profile;
+                }
+            }
+
+            // Encontrar perfiles secundarios
+            const sortedScores = Object.entries(scores)
+                .sort((a, b) => b[1] - a[1]);
+
+            const secondaryProfiles = sortedScores.slice(1, 3);
+
+            // Mostrar resultados
+            document.getElementById("questionnaire-container").style.display = "none";
+            document.getElementById("results-container").classList.add("active");
+
+            const mainProfileData = leadershipProfiles[mainProfile];
+            document.getElementById("main-result-title").textContent = mainProfileData.name;
+            document.getElementById("main-result-subtitle").textContent = `Tu puntuación: ${maxScore} puntos`;
+            document.getElementById("desc-title").textContent = mainProfileData.name;
+            document.getElementById("desc-text").textContent = mainProfileData.description;
+
+            // Características
+            const charContainer = document.getElementById("characteristics-container");
+            charContainer.innerHTML = mainProfileData.strengths.map(char =>
+                `<div class="char-item">
+                    <strong>${char.label}</strong>
+                    <span>${char.value}</span>
+                </div>`
+            ).join("");
+
+            // Recomendaciones
+            const recList = document.getElementById("recommendations-list");
+            recList.innerHTML = mainProfileData.recommendations.map(rec =>
+                `<li>${rec}</li>`
+            ).join("");
+
+            // Secundarios
+            const secContainer = document.getElementById("secondary-results");
+            secContainer.innerHTML = secondaryProfiles.map(([profile, score]) => {
+                const profileData = leadershipProfiles[profile];
+                return `<div class="secondary-result">
+                    <h4>${profileData.name}</h4>
+                    <p>Puntuación: ${score}</p>
+                </div>`;
+            }).join("");
+
+            // Puntuaciones detalladas
+            const scoresContainer = document.getElementById("scores-container");
+            scoresContainer.innerHTML = Object.entries(scores).map(([profile, score]) => {
+                const profileData = leadershipProfiles[profile];
+                const maxPossibleScore = 60; // 20 preguntas × 3 puntos máximo por respuesta
+                const percentage = (score / maxPossibleScore) * 100;
+
+                return `<div class="score-item">
+                    <div class="score-label">
+                        <span>${profileData.name}</span>
+                        <span>${score}/${maxPossibleScore}</span>
+                    </div>
+                    <div class="score-bar">
+                        <div class="score-fill" style="width: ${percentage}%"></div>
+                    </div>
+                </div>`;
+            }).join("");
+        }
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            Object.keys(answers).forEach(key => delete answers[key]);
+            scores = {
+                transformacional: 0,
+                directivo: 0,
+                democrático: 0,
+                delegativo: 0,
+                analítico: 0,
+                empático: 0
+            };
+
+            document.getElementById("questionnaire-container").style.display = "block";
+            document.getElementById("results-container").classList.remove("active");
+            document.getElementById("btn-next").textContent = "Siguiente →";
+
+            // Limpiar respuestas seleccionadas
+            document.querySelectorAll('input[type="radio"]').forEach(radio => {
+                radio.checked = false;
+            });
+
+            // Mostrar primera pregunta
+            document.querySelectorAll(".question-section").forEach(section => {
+                section.classList.remove("active");
+            });
+            document.getElementById("question-0").classList.add("active");
+            document.getElementById("btn-prev").style.display = "none";
+            updateProgress();
+        }
+
+        // Iniciar
+        init();
+    </script>
+</body>
+</html>

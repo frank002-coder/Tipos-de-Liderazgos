@@ -203,6 +203,24 @@
         }
         .result-hero h2 { font-size: 1.9em; margin-bottom: 8px; }
         .result-hero .tagline { font-size: 0.95em; opacity: .85; }
+        .result-hero .secondary-tag {
+            display: inline-block;
+            margin-top: 12px;
+            font-size: 0.78em;
+            background: rgba(255,255,255,.12);
+            padding: 5px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,.3);
+        }
+        .hybrid-note {
+            background: rgba(201,168,76,.15);
+            border: 1px solid var(--oro);
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 0.82em;
+            margin-top: 14px;
+            line-height: 1.5;
+        }
 
         /* DIMENSIONES */
         .dims-grid {
@@ -237,6 +255,8 @@
         }
         .dim-card.high { border-color: var(--teal); background: #EDF8FA; }
         .dim-card.high .dim-name { color: var(--teal); }
+        .dim-card.low { border-color: var(--rojo); background: #FBF0EF; }
+        .dim-card.low .dim-name { color: var(--rojo); }
 
         /* BARRAS */
         .scores-section {
@@ -251,7 +271,13 @@
             color: var(--azul);
             text-transform: uppercase;
             letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+        .scores-section .sub {
+            font-size: 0.78em;
+            color: var(--gris);
             margin-bottom: 16px;
+            display: block;
         }
         .score-row { margin-bottom: 14px; }
         .score-top {
@@ -262,8 +288,9 @@
         }
         .score-name { font-weight: 600; color: var(--azul); }
         .score-pct  { color: var(--gris); }
-        .score-bar  { background: #DDE2E8; height: 8px; border-radius: 4px; overflow: hidden; }
+        .score-bar  { background: #DDE2E8; height: 8px; border-radius: 4px; overflow: hidden; position: relative; }
         .score-fill { height: 100%; border-radius: 4px; transition: width .5s ease; }
+        .score-mid-marker { position:absolute; left:50%; top:-2px; bottom:-2px; width:2px; background:#9CA3AF; }
 
         /* PERFIL NARRATIVO */
         .narrative {
@@ -275,6 +302,7 @@
         }
         .narrative h3 { font-size: 0.85em; text-transform: uppercase; letter-spacing: 1px; color: var(--teal); margin-bottom: 10px; }
         .narrative p  { font-size: 0.95em; color: var(--azul); line-height: 1.65; }
+        .narrative p + p { margin-top: 10px; }
 
         /* FORTALEZAS Y CIEGAS */
         .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px; }
@@ -357,6 +385,8 @@
                 <div class="tipo-badge" id="r-badge">Perfil</div>
                 <h2 id="r-title">—</h2>
                 <p class="tagline" id="r-tagline">—</p>
+                <div class="secondary-tag" id="r-secondary" style="display:none;"></div>
+                <div class="hybrid-note" id="r-hybrid" style="display:none;"></div>
             </div>
 
             <div class="dims-grid" id="dims-grid"></div>
@@ -364,10 +394,12 @@
             <div class="narrative">
                 <h3>Tu Perfil Psicológico</h3>
                 <p id="r-narrative">—</p>
+                <p id="r-narrative-secondary"></p>
             </div>
 
             <div class="scores-section">
-                <h3>📊 Puntaje por Dimensión</h3>
+                <h3>📊 Posición por Dimensión</h3>
+                <span class="sub">Comparado con la distribución típica de respuestas de este instrumento — no con puntos crudos</span>
                 <div id="scores-bars"></div>
             </div>
 
@@ -377,7 +409,7 @@
                     <ul id="r-strengths"></ul>
                 </div>
                 <div class="col-card rojo">
-                    <h3>🔺 Puntos Ciegos</h3>
+                    <h3>🔺 Oportunidades de Mejora Reales</h3>
                     <ul id="r-blinds"></ul>
                 </div>
             </div>
@@ -409,6 +441,25 @@ const DIMS = {
   reflexion:  { label: "Reflexión Crítica",            color: "#1A2E4A" },
   emocion:    { label: "Inteligencia Emocional",       color: "#0D7377" },
   influencia: { label: "Influencia / Inspiración",     color: "#8B5CF6" }
+};
+
+// ═══════════════════════════════════════════════════════
+//  CONSTANTES DE NORMALIZACIÓN (calibradas por simulación
+//  Monte Carlo de 20,000 respuestas aleatorias sobre este
+//  instrumento — permiten comparar dimensiones con distinta
+//  cantidad de oportunidades de puntaje entre sí, en vez de
+//  comparar puntos crudos que favorecen a las dimensiones
+//  más frecuentes en el banco de preguntas)
+// ═══════════════════════════════════════════════════════
+const NORM = {
+  tarea:      { mean: 18.02, std: 4.94 },
+  personas:   { mean: 24.96, std: 5.30 },
+  control:    { mean: 10.98, std: 4.87 },
+  autonomia:  { mean: 12.62, std: 4.83 },
+  riesgo:     { mean: 5.44,  std: 3.30 },
+  reflexion:  { mean: 20.58, std: 4.86 },
+  emocion:    { mean: 15.78, std: 4.88 },
+  influencia: { mean: 13.22, std: 4.34 }
 };
 
 // ═══════════════════════════════════════════════════════
@@ -619,87 +670,78 @@ const QS = [
 ];
 
 // ═══════════════════════════════════════════════════════
-//  PERFILES (basados en combinación de dimensiones altas)
+//  BANCO DE CONTENIDO POR DIMENSIÓN (no por combinación fija)
+//  Cada dimensión aporta: identidad primaria, matiz cuando es
+//  secundaria, fortalezas, oportunidad de mejora real y
+//  recomendación accionable — se combinan según el resultado
+//  real de cada persona, no según una casilla predefinida.
 // ═══════════════════════════════════════════════════════
-const PROFILES = [
-  {
-    id: "visionario",
-    nombre: "Líder Visionario-Transformador",
-    tagline: "Conviertes dirección en motivación",
-    badge: "TRANSFORMACIONAL",
-    match: s => s.influencia >= 14 && s.personas >= 10,
-    narrative: "Tu motor es la inspiración. Cuando entiendes el 'por qué' de algo, eres capaz de transmitirlo con tal claridad que el equipo lo adopta como propio. Psicológicamente, tu necesidad de afiliación y logro se canalizan a través de otros: tu éxito se mide en el crecimiento de las personas que lideras. Tienes alta tolerancia a la ambigüedad y usas el conflicto como combustible de cambio.",
-    strengths: ["Articulas visiones que movilizan emocionalmente", "Contagias energía positiva en momentos difíciles", "Desarrollas líderes dentro del equipo", "Adaptación ágil ante el cambio organizacional"],
-    blinds: ["Puedes perder de vista los detalles operativos", "El optimismo excesivo puede minimizar riesgos reales", "Riesgo de crear dependencia emocional en el equipo", "Impaciencia con procesos lentos o burocracia"],
-    recs: ["Complementa tu visión con métricas de avance concretas", "Diseña momentos de 'aterrizaje' donde visión se traduce en tareas", "Practica escuchar quejas sin convertirlas inmediatamente en oportunidades", "Asegura que el equipo entienda el 'cómo', no solo el 'por qué'"]
+const BANK = {
+  tarea: {
+    badge: "EJECUTOR",
+    primary: "Tu liderazgo se organiza alrededor de resultados claros y verificables. Estableces expectativas sin ambigüedad y tu equipo sabe exactamente qué se espera — eso reduce la incertidumbre y acelera la ejecución.",
+    secondary: "y sostienes esto con una fuerte orientación a la tarea: te cuesta avanzar sin claridad de qué se debe entregar y cuándo.",
+    strengths: ["Estableces expectativas y plazos sin ambigüedad", "Alta eficiencia operativa y foco en resultados"],
+    oportunidad: ["El foco en resultados puede opacar señales de desgaste del equipo antes de que se vuelvan un problema", "Corres el riesgo de medir compromiso solo por entregables, no por lo que sostiene esos entregables"],
+    recomendacion: "Agrega 1 pregunta de estado del equipo (no de resultados) a tu check-in semanal — antes de revisar entregables, antes de todo."
   },
-  {
-    id: "ejecutor",
-    nombre: "Líder Ejecutor-Directivo",
-    tagline: "Tu equipo sabe exactamente qué se espera",
-    badge: "DIRECTIVO",
-    match: s => s.tarea >= 16 && s.control >= 12,
-    narrative: "Tu fortaleza es la claridad: defines expectativas, estableces procesos y monitoreas resultados con precisión. Psicológicamente, tienes alta necesidad de control y estructura, lo que reduce la incertidumbre para ti y para tu equipo. Tu zona de riesgo está en la dimensión emocional: cuando los resultados no llegan, puedes intensificar la presión sin diagnosticar el estado interno del equipo.",
-    strengths: ["Estableces expectativas sin ambigüedad", "Alta eficiencia operativa y gestión del tiempo", "Accountability claro y consistente", "Excelente en situaciones de crisis o plazos críticos"],
-    blinds: ["Puede generar climas de alta presión sin saberlo", "Feedback está muy centrado en errores vs. reconocimiento", "Dificultad para ceder control en tareas delegadas", "El 'cómo' puede pesar más que el 'por qué' para tu equipo"],
-    recs: ["Agrega 1 check-in emocional por semana (no de resultados)", "Practica reconocer comportamientos, no solo resultados", "Experimenta con delegar sin monitoreo diario y observa qué pasa", "Pregunta al equipo: '¿Qué necesitan de mí para lograrlo?'"]
-  },
-  {
-    id: "colaborativo",
-    nombre: "Líder Colaborativo-Democrático",
-    tagline: "Tu equipo se siente escuchado y parte de todo",
+  personas: {
     badge: "COLABORATIVO",
-    match: s => s.personas >= 14 && s.autonomia >= 10,
-    narrative: "Valoras profundamente la participación y la equidad de voz. Psicológicamente, tu alta orientación a las relaciones se traduce en decisiones co-construidas y alta cohesión grupal. Tu desafío es la velocidad: los procesos muy participativos pueden ralentizar la respuesta ante urgencias, y en situaciones donde el equipo está dividido, evitar la decisión puede generar más tensión que tomarla.",
-    strengths: ["Genera alta apropiación de los resultados en el equipo", "Aprovecha la diversidad de perspectivas", "Clima de confianza y seguridad psicológica", "Retención de talento: la gente quiere trabajar contigo"],
-    blinds: ["Indecisión cuando no hay consenso", "Riesgo de diluir accountability individual", "Dificultad para dar feedback duro de manera directa", "Puede sentirse como 'populismo' si no hay límites claros"],
-    recs: ["Define qué decisiones son participativas y cuáles no (tabla de votación)", "Practica el 'escucho todo pero decido yo' cuando sea necesario", "Trabaja el músculo de dar feedback difícil con estructura", "Comunica la decisión final con claridad aunque no haya consenso"]
+    primary: "Las relaciones son el centro de tu forma de liderar. Escuchas antes de decidir y tu equipo siente que su voz cuenta — eso genera cohesión y una alta apropiación de los resultados.",
+    secondary: "y esto se refuerza con tu orientación genuina a las personas: casi ninguna decisión la tomas sin pensar primero en cómo afecta al equipo.",
+    strengths: ["Genera alta cohesión y sentido de pertenencia en el equipo", "Aprovecha la diversidad de perspectivas antes de decidir"],
+    oportunidad: ["La búsqueda de consenso puede retrasar decisiones que el contexto exige tomar rápido", "Puede costarte dar retroalimentación directa cuando temes dañar la relación"],
+    recomendacion: "Define de antemano qué decisiones son participativas y cuáles no — y comunica esa diferencia antes de que la necesites, no en el momento de la tensión."
   },
-  {
-    id: "habilitador",
-    nombre: "Líder Habilitador-Delegativo",
-    tagline: "Tu equipo crece porque confías primero",
-    badge: "DELEGATIVO",
-    match: s => s.autonomia >= 16,
-    narrative: "Crees fundamentalmente en la capacidad de las personas. Psicológicamente, tienes baja necesidad de control y alta confianza en la autodeterminación de otros (Teoría de Deci & Ryan). Esto genera equipos de alta autonomía y crecimiento acelerado del talento. Tu punto ciego puede ser la falta de visibilidad sobre riesgos que el equipo no está comunicando.",
-    strengths: ["Acelera el desarrollo profesional del equipo", "Equipos con alta autonomía y criterio propio", "Sostenibilidad: no crea dependencia del líder", "Atrae talento que busca impacto real, no tutela"],
-    blinds: ["Puede haber riesgos que el equipo no te comunica", "Sin visibilidad mínima, los errores pueden escalar", "Algunos colaboradores necesitan más dirección de la que recibes", "Puede percibirse como distante o poco involucrado"],
-    recs: ["Establece 'puntos de visibilidad' sin microgestionarlos (ej. breve reporte semanal)", "Calibra autonomía según madurez: no todos están listos para el mismo nivel", "Diferencia entre 'confío en ti' y 'estoy disponible si me necesitas'", "Revisa ocasionalmente si todos están siendo bien servidos por el equipo"]
+  control: {
+    badge: "ESTRUCTURADO",
+    primary: "Reduces la incertidumbre a través de procesos claros y supervisión activa. Tu equipo sabe que nada se pierde de vista — eso genera consistencia, especialmente bajo presión.",
+    secondary: "reforzado por tu alta necesidad de estructura: te sientes más seguro cuando el proceso está definido y monitoreado.",
+    strengths: ["Alta consistencia y accountability en la ejecución", "Manejo sólido de situaciones de crisis o plazos críticos"],
+    oportunidad: ["El monitoreo constante puede leerse como desconfianza, aunque tu intención sea proteger la calidad", "Ceder control en tareas ya delegadas te cuesta más de lo que crees"],
+    recomendacion: "Elige una tarea ya delegada esta semana y déjala sin supervisión hasta la fecha de entrega — observa qué pasa antes de intervenir."
   },
-  {
-    id: "analitico",
-    nombre: "Líder Analítico-Estratégico",
-    tagline: "Tus decisiones se sostienen porque están bien fundamentadas",
+  autonomia: {
+    badge: "HABILITADOR",
+    primary: "Crees genuinamente en la capacidad de las personas para decidir por sí mismas. Delegas con confianza real, no solo de palabra — eso acelera el desarrollo profesional de tu equipo.",
+    secondary: "y esto se apoya en tu fuerte disposición a soltar control: prefieres que el equipo decida a decidir tú por ellos.",
+    strengths: ["Acelera el desarrollo profesional y el criterio propio del equipo", "Construye equipos que no dependen permanentemente de ti"],
+    oportunidad: ["Sin puntos mínimos de visibilidad, un riesgo real puede escalar antes de que te enteres", "Algunos colaboradores necesitan más dirección de la que les das por defecto"],
+    recomendacion: "Establece un punto de visibilidad breve (no de control) por semana — un reporte de 3 líneas es suficiente para detectar riesgos sin microgestionar."
+  },
+  riesgo: {
+    badge: "AUDAZ",
+    primary: "Ves la incertidumbre como territorio de oportunidad, no de amenaza. Tomas decisiones con información incompleta cuando el contexto lo exige — eso te permite moverte cuando otros siguen analizando.",
+    secondary: "y tu tolerancia al riesgo real refuerza esta disposición: rara vez el miedo a equivocarte te detiene.",
+    strengths: ["Capacidad real de actuar bajo incertidumbre sin paralizarte", "Impulsas iniciativas que otros descartan por prudencia excesiva"],
+    oportunidad: ["Puedes subestimar el costo real de un riesgo mal calculado para el equipo", "Tu comodidad con la ambigüedad no siempre es compartida por tu equipo — y eso genera ansiedad que no ves"],
+    recomendacion: "Antes de la próxima decisión arriesgada, pregunta explícitamente a alguien más prudente que tú qué es lo peor que podría pasar — y escúchalo de verdad."
+  },
+  reflexion: {
     badge: "ANALÍTICO",
-    match: s => s.reflexion >= 16 && s.tarea >= 12,
-    narrative: "Procesas antes de actuar. Tu alta reflexión crítica te convierte en el líder que pocas veces da pasos en falso, pero que puede ser percibido como lento o distante en contextos de alta urgencia. Psicológicamente, toleras bien la complejidad y la ambigüedad intelectual, pero puedes tener baja tolerancia a la ambigüedad emocional o relacional.",
-    strengths: ["Decisiones fundamentadas que resisten el escrutinio", "Capacidad para ver conexiones sistémicas", "Excelente gestión del riesgo técnico", "Alta credibilidad en contextos de alta complejidad"],
-    blinds: ["Velocidad de respuesta más lenta de lo que el contexto exige a veces", "Subestima la importancia del componente emocional", "Puede perder la confianza del equipo si la lógica no se explica", "Dificultad para actuar con información incompleta"],
-    recs: ["Practica el '70% de información es suficiente': toma acción antes de tener certeza total", "Comunica tu razonamiento explícitamente para que el equipo lo entienda", "Valida tus supuestos con el equipo; tu lectura puede no ser completa", "Agrega una pregunta emocional a tu análisis habitual: '¿Cómo vive el equipo esto?'"]
+    primary: "Procesas antes de actuar. Tus decisiones se sostienen porque están fundamentadas — pocas veces das pasos en falso, y eso te da credibilidad en contextos de alta complejidad.",
+    secondary: "sostenido por tu alta reflexión crítica: necesitas entender el panorama completo antes de comprometerte con un curso de acción.",
+    strengths: ["Decisiones fundamentadas que resisten el escrutinio", "Capacidad real de ver conexiones que otros pasan por alto"],
+    oportunidad: ["Tu velocidad de respuesta puede ser más lenta de lo que el contexto exige en una crisis real", "Puedes subestimar cuánto pesa el componente emocional en una decisión que para ti es puramente técnica"],
+    recomendacion: "La próxima vez que sientas que necesitas 'un poco más de información' antes de decidir, pregúntate si ya tienes el 70% — y actúa con eso."
   },
-  {
-    id: "empatico",
-    nombre: "Líder Empático-Humano",
-    tagline: "Las personas se desarrollan porque se sienten vistas",
-    badge: "HUMANO",
-    match: s => s.emocion >= 16 && s.personas >= 14,
-    narrative: "Tu inteligencia emocional es tu superpoder. Capturas el estado de ánimo del equipo antes de que lo verbalicen. Psicológicamente, tienes alta empatía afectiva y cognitiva: no solo sientes lo que sientes el otro, sino que entiendes por qué. Tu riesgo es la fatiga por compasión (compassion fatigue) y la dificultad para sostener conversaciones de alta exigencia sin sentir que dañas la relación.",
-    strengths: ["Equipo con altísima seguridad psicológica", "Alta retención: la gente quiere trabajar contigo", "Resolución de conflictos con habilidad genuina", "Lector excepcional del estado emocional del equipo"],
-    blinds: ["Fatiga por asumir el peso emocional de todos", "Dificultad para dar feedback duro o exigir accountability", "Puede confundir empatía con permisividad", "Riesgo de relaciones personales que dificultan decisiones difíciles"],
-    recs: ["Distingue entre empatía y responsabilidad: puedes cuidar sin cargar", "Practica el 'feedback con cuidado': puedo ser directo y seguir siendo empático", "Establece límites explícitos entre tu rol profesional y el apoyo emocional", "Trabaja el músculo de sostener tensión: una conversación difícil no destruye la relación"]
+  emocion: {
+    badge: "EMPÁTICO",
+    primary: "Lees el estado emocional del equipo antes de que lo verbalicen. No solo sientes lo que siente el otro — entiendes por qué, y eso te permite intervenir antes de que un problema escale.",
+    secondary: "potenciado por tu inteligencia emocional: rara vez tomas una decisión sin considerar primero cómo la va a vivir la gente.",
+    strengths: ["Genera altísima seguridad psicológica en el equipo", "Detecta y resuelve tensiones antes de que se vuelvan crisis"],
+    oportunidad: ["Cargar el peso emocional del equipo de forma constante te desgasta más de lo que reconoces", "Dar feedback duro o exigir accountability te cuesta más que a la mayoría"],
+    recomendacion: "Practica una frase que separe cuidado de permisividad: 'te voy a decir esto con cuidado, y aun así te lo voy a decir directo' — y úsala la próxima vez que evites una conversación difícil."
   },
-  {
-    id: "integrador",
-    nombre: "Líder Integrador-Balanceado",
-    tagline: "Tu fortaleza es la flexibilidad situacional",
-    badge: "SITUACIONAL",
-    match: s => true, // fallback
-    narrative: "Tu perfil muestra distribución equilibrada entre múltiples dimensiones. Psicológicamente, tienes alta flexibilidad situacional: adaptas tu estilo según el contexto, el colaborador y el momento. Esto es un indicador de madurez de liderazgo avanzada (Liderazgo Situacional, Hersey & Blanchard). Tu riesgo es la falta de una 'firma' de liderazgo reconocible, lo que puede generar incertidumbre en el equipo sobre qué esperar de ti.",
-    strengths: ["Alta adaptabilidad ante contextos cambiantes", "No tienes un solo modo: puedes ser directivo o delegativo", "Capacidad de trabajar con distintos tipos de personas", "Lectura situacional fina de qué necesita cada momento"],
-    blinds: ["Puede generar incertidumbre: '¿cómo será hoy el jefe?'", "Sin una línea clara, el equipo puede no saber qué esperar", "La flexibilidad puede leerse como inconsistencia", "Riesgo de no profundizar en ninguna dimensión por cubrir todas"],
-    recs: ["Define tu 'firma': 2-3 valores de liderazgo que son constantes pase lo que pase", "Comunica explícitamente por qué cambias de estilo según el contexto", "Invierte en la dimensión más baja para convertirla en fortaleza", "Pide al equipo que te diga cómo te perciben; puede sorprenderte"]
+  influencia: {
+    badge: "INSPIRADOR",
+    primary: "Tu motor es la inspiración. Cuando entiendes el 'por qué' de algo, eres capaz de transmitirlo con tal claridad que el equipo lo adopta como propio — eso moviliza incluso en momentos difíciles.",
+    secondary: "y tu capacidad de influencia amplifica esto: consigues que otros se sumen a una idea no por obligación, sino por convicción genuina.",
+    strengths: ["Articula visiones que movilizan emocionalmente al equipo", "Genera energía y compromiso genuino, no solo cumplimiento"],
+    oportunidad: ["El entusiasmo por la visión puede hacer que minimices riesgos operativos reales", "Puedes perder de vista el detalle de ejecución mientras comunicas la dirección grande"],
+    recomendacion: "Después de comunicar una visión, cierra siempre con una pregunta operativa concreta: '¿quién hace qué, para cuándo?' — no dejes que la inspiración se quede sin aterrizar."
   }
-];
+};
 
 // ─── STATE ───────────────────────────────────────────
 let cur = 0;
@@ -728,7 +770,6 @@ function buildQuestions() {
 }
 
 function pick(qi, oi) {
-  // Si ya respondió esta, restar
   if (answers[qi] !== undefined) {
     const prev = QS[qi].ops[answers[qi]].d;
     for (const [dim, pts] of Object.entries(prev)) {
@@ -784,71 +825,99 @@ function goBack() {
   }
 }
 
+// ─── NORMALIZACIÓN Y PERCENTIL ─────────────────────────
+// Aproximación de la función de distribución normal acumulada
+// (Abramowitz & Stegun) para convertir z-score en percentil 0-100
+function normalCDF(z) {
+  const t = 1 / (1 + 0.2316419 * Math.abs(z));
+  const d = 0.3989423 * Math.exp(-z * z / 2);
+  let p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+  return z > 0 ? 1 - p : p;
+}
+
+function computeZ() {
+  let z = {};
+  Object.keys(DIMS).forEach(d => {
+    z[d] = (scores[d] - NORM[d].mean) / NORM[d].std;
+  });
+  return z;
+}
+
 // ─── RESULTADOS ───────────────────────────────────────
 function showResults() {
-  // Encontrar perfil
-  let profile = PROFILES.find(p => p.match(scores)) || PROFILES[PROFILES.length-1];
+  const z = computeZ();
+  const dims = Object.keys(DIMS);
+  const ranked = dims.slice().sort((a,b) => z[b]-z[a]);
+  const top1 = ranked[0], top2 = ranked[1];
+  const bottom1 = ranked[ranked.length-1], bottom2 = ranked[ranked.length-2];
 
-  // Ocultar quiz
   document.getElementById('quiz-section').style.display = 'none';
   document.getElementById('results-section').classList.add('active');
 
-  // Hero
-  document.getElementById('r-badge').textContent = profile.badge;
-  document.getElementById('r-title').textContent = profile.nombre;
-  document.getElementById('r-tagline').textContent = profile.tagline;
-  document.getElementById('r-narrative').textContent = profile.narrative;
+  const b1 = BANK[top1], b2 = BANK[top2];
 
-  // Dimensiones — top 4 destacadas
-  const sorted = Object.entries(scores).sort((a,b) => b[1]-a[1]);
+  document.getElementById('r-badge').textContent = b1.badge;
+  document.getElementById('r-title').textContent = DIMS[top1].label;
+  document.getElementById('r-tagline').textContent = 'Perfil primario, matizado por ' + DIMS[top2].label.toLowerCase();
+
+  const secTag = document.getElementById('r-secondary');
+  secTag.style.display = 'inline-block';
+  secTag.textContent = '2º rasgo: ' + DIMS[top2].label + ' (' + b2.badge + ')';
+
+  // Nota de perfil híbrido si top1 y top2 están muy cerca
+  const gap = z[top1] - z[top2];
+  const hybridNote = document.getElementById('r-hybrid');
+  if (gap < 0.35) {
+    hybridNote.style.display = 'block';
+    hybridNote.textContent = '⚡ Tu perfil es fronterizo entre ' + DIMS[top1].label + ' y ' + DIMS[top2].label + ' — no hay un estilo claramente dominante, y eso en sí mismo es información: probablemente alternás entre ambos según el contexto, más que otros perfiles.';
+  } else {
+    hybridNote.style.display = 'none';
+  }
+
+  document.getElementById('r-narrative').textContent = b1.primary;
+  document.getElementById('r-narrative-secondary').textContent = 'Tu segundo rasgo más marcado es ' + DIMS[top2].label.toLowerCase() + ', ' + b2.secondary;
+
+  // Dimensiones — muestra las 2 más altas y las 2 más bajas
   const grid = document.getElementById('dims-grid');
-  grid.innerHTML = sorted.map(([dim, val], i) => {
+  const highlight = [top1, top2, bottom2, bottom1];
+  grid.innerHTML = highlight.map((dim) => {
     const info = DIMS[dim];
-    const isHigh = i < 2;
-    const nivel = val >= 18 ? 'Muy alto' : val >= 13 ? 'Alto' : val >= 8 ? 'Medio' : 'En desarrollo';
-    return `<div class="dim-card ${isHigh?'high':''}">
+    const isHigh = dim === top1 || dim === top2;
+    const pct = Math.round(normalCDF(z[dim]) * 100);
+    return `<div class="dim-card ${isHigh?'high':'low'}">
       <div class="dim-name">${info.label}</div>
-      <div class="dim-valor">${nivel} (${val} pts)</div>
-      <div class="dim-desc">${dimDesc(dim, val)}</div>
+      <div class="dim-valor">Percentil ${pct}</div>
+      <div class="dim-desc">${isHigh ? 'Entre tus rasgos más marcados' : 'Tu mayor oportunidad de desarrollo'}</div>
     </div>`;
   }).join('');
 
-  // Barras
-  const maxVal = Math.max(...Object.values(scores), 1);
-  document.getElementById('scores-bars').innerHTML = sorted.map(([dim, val]) => {
+  // Barras — todas las dimensiones ordenadas, mostrando percentil relativo al instrumento
+  document.getElementById('scores-bars').innerHTML = ranked.map((dim) => {
     const info = DIMS[dim];
-    const pct = Math.max(4, Math.round((val / 21) * 100));
+    const pct = Math.round(normalCDF(z[dim]) * 100);
     return `<div class="score-row">
       <div class="score-top">
         <span class="score-name">${info.label}</span>
-        <span class="score-pct">${val} pts</span>
+        <span class="score-pct">Percentil ${pct}</span>
       </div>
       <div class="score-bar">
+        <div class="score-mid-marker"></div>
         <div class="score-fill" style="width:${pct}%;background:${info.color}"></div>
       </div>
     </div>`;
   }).join('');
 
-  // Fortalezas / Puntos ciegos
-  document.getElementById('r-strengths').innerHTML = profile.strengths.map(s=>`<li>${s}</li>`).join('');
-  document.getElementById('r-blinds').innerHTML    = profile.blinds.map(b=>`<li>${b}</li>`).join('');
+  // Fortalezas: de las 2 dimensiones más altas (dinámico, no de un bucket fijo)
+  const strengths = [...BANK[top1].strengths, ...BANK[top2].strengths];
+  document.getElementById('r-strengths').innerHTML = strengths.map(s=>`<li>${s}</li>`).join('');
 
-  // Recomendaciones
-  document.getElementById('r-recs').innerHTML = profile.recs.map(r=>`<li>${r}</li>`).join('');
-}
+  // Oportunidades de mejora: de las 2 dimensiones más bajas REALES de esta persona
+  const oport = [...BANK[bottom1].oportunidad, ...BANK[bottom2].oportunidad.slice(0,1)];
+  document.getElementById('r-blinds').innerHTML = oport.map(o=>`<li>${o}</li>`).join('');
 
-function dimDesc(dim, val) {
-  const descs = {
-    tarea:      val>=14 ? "Fuerte orientación al logro y los procesos." : "Equilibras tarea y personas.",
-    personas:   val>=14 ? "Las relaciones son el núcleo de tu liderazgo." : "Cuidas al equipo pero mantienes foco en resultados.",
-    control:    val>=14 ? "Alta necesidad de estructura y supervisión." : "Toleras bien la incertidumbre y la autonomía ajena.",
-    autonomia:  val>=14 ? "Confías profundamente en la capacidad de otros." : "Balanceas dirección con delegación.",
-    riesgo:     val>=12 ? "Alta tolerancia: ves el riesgo como oportunidad." : "Prefieres decisiones bien respaldadas.",
-    reflexion:  val>=14 ? "Procesas profundamente antes de actuar." : "Balanceas reflexión con velocidad de acción.",
-    emocion:    val>=14 ? "Alta inteligencia emocional; lees el equipo con precisión." : "Desarrollas tu dimensión emocional activamente.",
-    influencia: val>=14 ? "Inspiras con facilidad; las personas te siguen con convicción." : "Tu influencia se basa más en la razón que en la emoción."
-  };
-  return descs[dim] || '';
+  // Recomendaciones: accionables, ligadas a las dimensiones más bajas reales
+  const recs = [BANK[bottom1].recomendacion, BANK[bottom2].recomendacion];
+  document.getElementById('r-recs').innerHTML = recs.map(r=>`<li>${r}</li>`).join('');
 }
 
 function restart() {
